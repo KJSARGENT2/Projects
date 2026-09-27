@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fenrir Unbound</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #05080d;
+    --field: #10151d;
+    --panel: #0a0f16;
+    --line: #00d9ff38;
+    --text: #d8e0ea;
+    --muted: #7d8899;
+    --neon: #00d9ff;
+    --neon-deep: #1f6bff;
+    --neon-ice: #9af0ff;
+    --warn: #ffcf8a;
+    --danger: #ff3d71;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  html, body { height: 100%; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .stage {
+    position: relative;
+    width: min(100vw, calc(100dvh * 0.5625));
+    max-width: 480px;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: none;
+  }
+  .hdr-btns {
+    position: absolute;
+    top: 0; right: 0;
+    height: 13.75%;
+    display: flex;
+    align-items: center;
+    padding-right: 4%;
+  }
+  .pause-btn {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    background: transparent;
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .pause-btn span {
+    display: block;
+    width: 9px; height: 26px;
+    border-radius: 4px;
+    background: var(--muted);
+  }
+  .pause-btn:hover span { background: var(--text); }
+  button:focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #05080de6;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  .card {
+    width: 100%;
+    max-width: 340px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px 22px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+  }
+  .card h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .card p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--muted);
+    max-width: 30ch;
+  }
+  .label {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pill {
+    font: 600 1.05rem var(--font);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--neon);
+    border: 0;
+    border-radius: 999px;
+    padding: 13px 44px;
+    cursor: pointer;
+    box-shadow: 0 0 24px #00d9ff55;
+  }
+  .pill:hover { background: var(--neon-ice); }
+  .ghost {
+    font: 500 0.95rem var(--font);
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 11px 20px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .ghost:hover { border-color: var(--neon); }
+  .stack { display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: stretch; }
+  .stack .pill { width: 100%; }
+  .viewer {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px 10px;
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--text);
+    width: 100%;
+  }
+  .viewer i {
+    font-style: normal;
+    font-size: 0.72rem;
+    font-weight: 600;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--neon);
+    color: var(--neon);
+    display: inline-grid;
+    place-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .viewer i.bad { border-color: var(--danger); color: var(--danger); }
+  .rows { width: 100%; display: flex; flex-direction: column; gap: 8px; font-variant-numeric: tabular-nums; }
+  .row { display: flex; justify-content: space-between; font-size: 0.95rem; color: var(--text); }
+  .row span:first-child { color: var(--muted); }
+  .row.final { border-top: 1px solid var(--line); padding-top: 10px; align-items: baseline; }
+  .row.final span:first-child { color: var(--text); font-weight: 600; }
+  .row.final span:last-child { color: var(--neon); font-size: 2rem; font-weight: 600; }
+  .help { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <canvas id="game" width="450" height="800" aria-label="Fenrir Unbound game board"></canvas>
+
+  <div class="hdr-btns">
+    <button class="pause-btn" id="pause-btn" type="button" aria-label="Pause"><span></span><span></span></button>
+  </div>
+
+  <div class="overlay" id="ov-title">
+    <div class="card">
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="#00d9ff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+        <path d="M10 6 L24 21 H40 L54 6 L55 30 L46 45 L32 58 L18 45 L9 30 Z"/>
+        <path d="M22 33 L27 35"/><path d="M42 33 L37 35"/>
+        <path d="M28 48 L32 51 L36 48"/>
+      </svg>
+      <h2>Fenrir Unbound</h2>
+      <p>Break every chain before the 3:00 clock runs out. Move with mouse, touch or ← →, launch with Space or tap.</p>
+      <button class="pill" id="play-btn" type="button">Play</button>
+      <div class="viewer">
+        <span class="label" style="grid-column:1/-1">Viewer actions (keys 1–6)</span>
+        <i>1</i><span>Sköll &amp; Hati: two more balls</span>
+        <i>2</i><span>Howl: wider paddle</span>
+        <i>3</i><span>Surtr's fire: burn through bricks</span>
+        <i>4</i><span>Mead of Odin: extra life</span>
+        <i class="bad">5</i><span>Loki's chains: a new row of bricks</span>
+        <i class="bad">6</i><span>Jörmungandr's fury: faster ball, smaller paddle</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-pause" hidden>
+    <div class="card">
+      <h2>Paused</h2>
+      <div class="stack">
+        <button class="pill" id="resume-btn" type="button">Resume</button>
+        <button class="ghost" id="sound-btn" type="button">Sound: on</button>
+        <button class="ghost" id="restart-btn" type="button">Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-end" hidden>
+    <div class="card">
+      <h2 id="end-title">Time's up!</h2>
+      <div class="rows">
+        <div class="row"><span>Score</span><span id="r-score">0</span></div>
+        <div class="row"><span>Lives left × 250</span><span id="r-lives">0</span></div>
+        <div class="row"><span>Levels cleared × 500</span><span id="r-levels">0</span></div>
+        <div class="row final"><span>Final score</span><span id="r-final">0</span></div>
+        <div class="row"><span>Best</span><span id="r-best">0</span></div>
+      </div>
+      <div class="label" id="end-count">Next round in 8</div>
+      <button class="pill" id="again-btn" type="button">Play again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const W = 450, H = 800, HB = 110;           // logical size, header band height
+  const ROUND = 180;
+  const GAME_ID = 'breaker';
+  function hubPost(event, data) {
+    try { if (window.parent !== window) window.parent.postMessage(Object.assign({ source: 'fenrir-game', game: GAME_ID, event }, data || {}), '*'); } catch (e) {}
+  }
+  const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  const C = {
+    bg: '#05080d', field: '#10151d', panel: '#0a0f16', text: '#d8e0ea', muted: '#7d8899',
+    neon: '#00d9ff', deep: '#1f6bff', ice: '#9af0ff', warn: '#ffcf8a', danger: '#ff3d71',
+  };
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const $ = id => document.getElementById(id);
+
+  // ---------- Levels: the three fetters of Fenrir, then Ragnarök ----------
+  // . empty · 1 (1 hit) · 2 (2 hits) · 3 (3 hits) · # unbreakable
+  const LEVELS = [
+    { name: 'Leyding', map: [
+      '11111111111',
+      '11111111111',
+      '1.1.1.1.1.1',
+      '11111111111',
+      '11111111111',
+    ] },
+    { name: 'Dromi', map: [
+      '22222222222',
+      '21111111112',
+      '21222222212',
+      '21211111212',
+      '21222222212',
+      '21111111112',
+      '22222222222',
+    ] },
+    { name: 'Gleipnir', map: [
+      '...33333...',
+      '..3222223..',
+      '.322111223.',
+      '#321111123#',
+      '.322111223.',
+      '..3222223..',
+      '...33333...',
+    ] },
+    { name: 'Ragnarök', map: [
+      '3#3#3#3#3#3',
+      '22222222222',
+      '12121212121',
+      '22222222222',
+      '31111111113',
+      '11111111111',
+      '#.#.....#.#',
+    ] },
+  ];
+  const BRICK = {
+    '1': { hp: 1, type: 'leather', pts: 10 },
+    '2': { hp: 2, type: 'iron', pts: 20 },
+    '3': { hp: 3, type: 'silk', pts: 40 },
+    '#': { hp: Infinity, type: 'stone', pts: 0 },
+  };
+  const POWERS = {
+    wide:  { icon: 'W', color: C.neon, label: 'Howl' },
+    multi: { icon: 'M', color: C.ice, label: 'Sköll & Hati' },
+    fire:  { icon: 'F', color: C.warn, label: "Surtr's fire" },
+    slow:  { icon: 'S', color: C.deep, label: 'Fimbulwinter' },
+    life:  { icon: '+', color: C.text, label: 'Mead of Odin' },
+  };
+  const POWER_BAG = ['wide', 'wide', 'multi', 'multi', 'fire', 'slow', 'slow', 'life'];
+
+  const COLS = 11, GAP = 5, SIDE = 12, TOP = HB + 46, BH = 30;
+  const BW = (W - SIDE * 2 - GAP * (COLS - 1)) / COLS;
+
+  // ---------- State ----------
+  let mode = 'title';          // title | count | play | paused | over
+  let pausedFrom = 'play';
+  let levelIndex = 0, levelsCleared = 0;
+  let score = 0, shownScore = 0, lives = 3, combo = 0;
+  let best = 0;
+  let roundLeft = ROUND, countT = 0, launchQueued = false;
+  let bricks = [], balls = [], drops = [], particles = [], floaters = [];
+  let shake = 0, time = 0, flash = 0, banner = null, levelJump = false;
+  const effects = { wide: 0, fire: 0, slow: 0, shrink: 0 };
+  const paddle = { x: W / 2, y: H - 56, w: 84, h: 14, target: W / 2 };
+  const keys = { left: false, right: false };
+  let soundOn = true;
+
+  try { best = +localStorage.getItem('fenrir-breaker-best') || 0; } catch (e) {}
+  try { soundOn = localStorage.getItem('fenrir-breaker-sound') !== 'off'; } catch (e) {}
+
+  // ---------- Sound (created lazily after first gesture) ----------
+  let actx = null;
+  function tone(freq, dur = 0.08, type = 'square', vol = 0.06, slide = 0) {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const t = actx.currentTime;
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + dur);
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(actx.destination);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  const sfx = {
+    paddle: () => tone(220, 0.07, 'triangle', 0.08),
+    brick: (n) => tone(420 + Math.min(n, 12) * 45, 0.06, 'square', 0.04),
+    iron: () => tone(900, 0.05, 'square', 0.03),
+    stone: () => tone(140, 0.08, 'sawtooth', 0.04),
+    power: () => { tone(520, 0.08, 'triangle', 0.07); setTimeout(() => tone(780, 0.12, 'triangle', 0.07), 70); },
+    lose: () => tone(300, 0.5, 'sawtooth', 0.06, -220),
+    howl: () => { tone(330, 0.5, 'sine', 0.08, 260); setTimeout(() => tone(590, 0.6, 'sine', 0.06, -200), 380); },
+    tick: () => tone(660, 0.06, 'sine', 0.05),
+  };
+
+  // ---------- Setup ----------
+  function buildLevel(i) {
+    const L = LEVELS[i % LEVELS.length];
+    bricks = [];
+    L.map.forEach((row, r) => {
+      [...row].forEach((ch, c) => {
+        const def = BRICK[ch];
+        if (!def) return;
+        bricks.push({
+          x: SIDE + c * (BW + GAP), y: TOP + r * (BH + GAP), w: BW, h: BH,
+          hp: def.hp, max: def.hp, type: def.type, pts: def.pts, hit: 0,
+        });
+      });
+    });
+    drops = [];
+    effects.wide = effects.fire = effects.slow = effects.shrink = 0;
+    resetBall();
+  }
+  function baseSpeed() { return 330 + Math.min(levelIndex, 10) * 22; }
+  function resetBall() {
+    balls = [{ x: paddle.x, y: paddle.y - 10, vx: 0, vy: 0, r: 7, stuck: true, trail: [] }];
+    combo = 0;
+  }
+  function launch() {
+    for (const b of balls) {
+      if (!b.stuck) continue;
+      const s = baseSpeed();
+      const a = (Math.random() * 0.5 - 0.25);
+      b.vx = Math.sin(a) * s; b.vy = -Math.cos(a) * s; b.stuck = false;
+    }
+  }
+  function newGame() {
+    score = 0; shownScore = 0; lives = 3; levelIndex = 0; levelsCleared = 0;
+    roundLeft = ROUND; banner = null; toast = null;
+    particles = []; floaters = [];
+    buildLevel(0);
+    showScreen(null);
+    mode = 'count'; countT = 3; launchQueued = false;
+    sfx.tick();
+  }
+
+  // ---------- Screens ----------
+  function showScreen(which) {
+    $('ov-title').hidden = which !== 'title';
+    $('ov-pause').hidden = which !== 'pause';
+    $('ov-end').hidden = which !== 'end';
+    if (which === 'title') $('play-btn').focus();
+    if (which === 'pause') $('resume-btn').focus();
+    if (which === 'end') $('again-btn').focus();
+    if (!which) document.activeElement?.blur?.();
+  }
+  function overlayOpen() { return mode === 'title' || mode === 'paused' || mode === 'over'; }
+
+  let endTimer = null;
+  function stopEndTimer() { if (endTimer) clearInterval(endTimer); endTimer = null; }
+  function endRound(reason) {
+    mode = 'over';
+    const livesBonus = Math.max(0, lives) * 250;
+    const levelBonus = levelsCleared * 500;
+    const final = score + livesBonus + levelBonus;
+    if (final > best) {
+      best = final;
+      try { localStorage.setItem('fenrir-breaker-best', best); } catch (e) {}
+    }
+    $('end-title').textContent = reason === 'time' ? "Time's up!" : 'Game over';
+    $('r-score').textContent = score;
+    $('r-lives').textContent = '+' + livesBonus;
+    $('r-levels').textContent = '+' + levelBonus;
+    $('r-final').textContent = final;
+    $('r-best').textContent = best;
+    showScreen('end');
+    hubPost('round-end', { score: final, won: levelsCleared > 0, stats: { reason, levelsCleared, lives: Math.max(0, lives) } });
+    let left = 8;
+    const tick = () => {
+      $('end-count').textContent = 'Next round in ' + left;
+      if (left-- <= 0) { stopEndTimer(); newGame(); }
+    };
+    stopEndTimer(); tick();
+    endTimer = setInterval(tick, 1000);
+  }
+
+  function togglePause() {
+    if (mode === 'play' || mode === 'count') {
+      pausedFrom = mode; mode = 'paused'; showScreen('pause');
+    } else if (mode === 'paused') { mode = pausedFrom; showScreen(null); }
+  }
+  function renderSoundBtn() { $('sound-btn').textContent = 'Sound: ' + (soundOn ? 'on' : 'off'); }
+  $('play-btn').addEventListener('click', newGame);
+  $('again-btn').addEventListener('click', () => { stopEndTimer(); newGame(); });
+  $('resume-btn').addEventListener('click', togglePause);
+  $('restart-btn').addEventListener('click', newGame);
+  $('pause-btn').addEventListener('click', togglePause);
+  $('sound-btn').addEventListener('click', () => {
+    soundOn = !soundOn;
+    try { localStorage.setItem('fenrir-breaker-sound', soundOn ? 'on' : 'off'); } catch (e) {}
+    renderSoundBtn();
+  });
+  renderSoundBtn();
+
+  // ---------- Input ----------
+  function toLocal(e) {
+    const r = canvas.getBoundingClientRect();
+    return (e.clientX - r.left) * (W / r.width);
+  }
+  canvas.addEventListener('pointermove', e => { paddle.target = toLocal(e); });
+  canvas.addEventListener('pointerdown', e => {
+    paddle.target = toLocal(e);
+    if (mode === 'play') launch();
+    else if (mode === 'count') launchQueued = true;
+  });
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { keys.left = true; e.preventDefault(); }
+    else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { keys.right = true; e.preventDefault(); }
+    else if (e.key === ' ' || e.key === 'Enter') {
+      // A focused button handles its own activation; don't double-fire
+      const onBtn = document.activeElement && document.activeElement.tagName === 'BUTTON';
+      if (mode === 'play') { launch(); e.preventDefault(); }
+      else if (mode === 'count') { launchQueued = true; e.preventDefault(); }
+      else if (!onBtn) {
+        if (mode === 'title') newGame();
+        else if (mode === 'over') { stopEndTimer(); newGame(); }
+        else if (mode === 'paused') togglePause();
+        e.preventDefault();
+      }
+    }
+    else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') togglePause();
+    else if (e.key === 'h' || e.key === 'H') toggleStream();
+    else if (/^[1-6]$/.test(e.key) && !e.repeat) viewerAction(+e.key);
+  });
+  window.addEventListener('keyup', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+  });
+
+  // H is kept for compatibility; the page has no outer chrome to hide any more
+  function toggleStream(force) {
+    const on = force ?? !document.body.classList.contains('stream');
+    document.body.classList.toggle('stream', on);
+    try { localStorage.setItem('fenrir-breaker-stream', on ? 'on' : 'off'); } catch (e) {}
+  }
+
+  // ---------- Viewer actions (bound to TikTok LIVE events in Fenrir) ----------
+  const VIEWER = {
+    1: { power: 'multi' },
+    2: { power: 'wide' },
+    3: { power: 'fire' },
+    4: { power: 'life' },
+    5: { label: "Loki's chains", run: lokisChains },
+    6: { label: "Jörmungandr's fury", run: jormungandr },
+  };
+  let toast = null;
+  function showToast(label, hostile) { toast = { label, color: hostile ? C.danger : C.neon, t: 0 }; }
+  function viewerAction(n) {
+    if (mode !== 'play') return;
+    const a = VIEWER[n];
+    hubPost('viewer-action', { key: n });
+    if (a.power) { applyPower(a.power); showToast(POWERS[a.power].label, false); }
+    else { a.run(); showToast(a.label, true); }
+  }
+  function lokisChains() {
+    // Push every brick down one row and add a fresh 2-hit row on top
+    const lowest = bricks.reduce((m, k) => Math.max(m, k.y + k.h), 0);
+    if (lowest + BH + GAP < paddle.y - 160) for (const k of bricks) k.y += BH + GAP;
+    for (let c = 0; c < COLS; c++) {
+      const x = SIDE + c * (BW + GAP);
+      if (bricks.some(k => k.x === x && k.y < TOP + BH)) continue;
+      bricks.push({ x, y: TOP, w: BW, h: BH, hp: 2, max: 2, type: 'iron', pts: 20, hit: 0.15 });
+    }
+    for (const b of balls) if (!b.stuck && b.y < TOP + BH + b.r + GAP && b.y > TOP - b.r) { b.y = TOP + BH + b.r + GAP; b.vy = Math.abs(b.vy); }
+    sfx.stone(); shake = 6;
+  }
+  function jormungandr() {
+    for (const b of balls) { b.vx *= 1.3; b.vy *= 1.3; }
+    effects.shrink = 10; effects.wide = 0;
+    sfx.lose(); shake = 6;
+  }
+
+  // ---------- Physics helpers ----------
+  function circleRect(b, r) {
+    const cx = Math.max(r.x, Math.min(b.x, r.x + r.w));
+    const cy = Math.max(r.y, Math.min(b.y, r.y + r.h));
+    const dx = b.x - cx, dy = b.y - cy;
+    return dx * dx + dy * dy < b.r * b.r;
+  }
+  function burst(x, y, color, n = 10, spd = 160) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, s = Math.random() * spd + 40;
+      particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 40, life: 0.5 + Math.random() * 0.3, t: 0, color, size: Math.random() * 2.5 + 1.5 });
+    }
+  }
+  function brickColor(k) {
+    if (k.type === 'stone') return C.muted;
+    return k.hp >= 3 ? C.deep : k.hp === 2 ? C.neon : C.warn;
+  }
+
+  function damage(k, ball) {
+    if (k.type === 'stone') { sfx.stone(); k.hit = 0.15; return; }
+    const col = brickColor(k);
+    k.hp -= (effects.fire > 0 ? k.hp : 1);
+    k.hit = 0.15;
+    if (k.hp > 0) { sfx.iron(); burst(ball.x, ball.y, col, 4, 90); return; }
+    combo++;
+    sfx.brick(combo);
+    const gained = k.pts * Math.min(combo, 8);
+    score += gained;
+    floaters.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, text: '+' + gained, t: 0 });
+    bricks.splice(bricks.indexOf(k), 1);
+    burst(k.x + k.w / 2, k.y + k.h / 2, col, 12);
+    shake = Math.min(shake + 1.5, 5);
+    if (Math.random() < 0.16) {
+      const kind = POWER_BAG[Math.floor(Math.random() * POWER_BAG.length)];
+      drops.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, kind, vy: 120 });
+    }
+    if (!bricks.some(b => b.type !== 'stone')) levelCleared();
+  }
+
+  function levelCleared() {
+    levelIndex++;
+    levelsCleared++;
+    sfx.howl();
+    flash = 0.6;
+    buildLevel(levelIndex);
+    levelJump = true;
+    banner = { text: 'Level ' + (levelIndex + 1), t: 0 };
+  }
+
+  function loseLife() {
+    lives--;
+    sfx.lose();
+    shake = 8;
+    effects.wide = effects.fire = effects.slow = effects.shrink = 0;
+    drops = [];
+    if (lives <= 0) { lives = 0; endRound('lives'); }
+    else resetBall();
+  }
+
+  function applyPower(kind) {
+    sfx.power();
+    const p = POWERS[kind];
+    floaters.push({ x: paddle.x, y: paddle.y - 24, text: p.label, t: 0, color: p.color });
+    if (kind === 'wide') effects.wide = 12;
+    if (kind === 'fire') effects.fire = 8;
+    if (kind === 'slow') effects.slow = 10;
+    if (kind === 'life') lives = Math.min(lives + 1, 9);
+    if (kind === 'multi') {
+      const src = balls.find(b => !b.stuck) || balls[0];
+      const s = Math.hypot(src.vx, src.vy) || baseSpeed();
+      for (const off of [-0.5, 0.5]) {
+        const a = Math.atan2(src.vx, -(src.vy || -1)) + off;
+        balls.push({ x: src.x, y: Math.min(src.y, paddle.y - 12), vx: Math.sin(a) * s, vy: -Math.abs(Math.cos(a) * s), r: 7, stuck: false, trail: [] });
+      }
+    }
+  }
+
+  // ---------- Update ----------
+  function updatePaddle(dt) {
+    const targetW = effects.wide > 0 ? 130 : effects.shrink > 0 ? 56 : 84;
+    paddle.w += (targetW - paddle.w) * Math.min(1, dt * 10);
+    if (keys.left) paddle.target = paddle.x - 560 * dt * 4;
+    if (keys.right) paddle.target = paddle.x + 560 * dt * 4;
+    const maxStep = (keys.left || keys.right) ? 560 * dt : 2000 * dt;
+    const dx = Math.max(-maxStep, Math.min(maxStep, paddle.target - paddle.x));
+    paddle.x = Math.max(paddle.w / 2, Math.min(W - paddle.w / 2, paddle.x + dx));
+    for (const b of balls) if (b.stuck) { b.x = paddle.x; b.y = paddle.y - b.r - 1; }
+  }
+
+  function update(dt) {
+    for (const k in effects) effects[k] = Math.max(0, effects[k] - dt);
+
+    roundLeft -= dt;
+    if (roundLeft <= 0) { roundLeft = 0; endRound('time'); return; }
+
+    updatePaddle(dt);
+    const speedMul = effects.slow > 0 ? 0.65 : 1;
+
+    for (let i = balls.length - 1; i >= 0; i--) {
+      const b = balls[i];
+      if (b.stuck) continue;
+      b.trail.push({ x: b.x, y: b.y }); if (b.trail.length > 6) b.trail.shift();
+
+      const dist = Math.hypot(b.vx, b.vy) * speedMul * dt;
+      const steps = Math.max(1, Math.ceil(dist / 4));
+      const sdt = dt * speedMul / steps;
+      for (let s = 0; s < steps; s++) {
+        b.x += b.vx * sdt;
+        if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); }
+        if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx); }
+        let k = bricks.find(r => circleRect(b, r));
+        if (k) {
+          const pass = effects.fire > 0 && k.type !== 'stone';
+          if (!pass) { b.x -= b.vx * sdt; b.vx = -b.vx; }
+          damage(k, b);
+          if (levelJump) { levelJump = false; return; }
+        }
+        b.y += b.vy * sdt;
+        if (b.y < HB + b.r) { b.y = HB + b.r; b.vy = Math.abs(b.vy); }
+        k = bricks.find(r => circleRect(b, r));
+        if (k) {
+          const pass = effects.fire > 0 && k.type !== 'stone';
+          if (!pass) { b.y -= b.vy * sdt; b.vy = -b.vy; }
+          damage(k, b);
+          if (levelJump) { levelJump = false; return; }
+        }
+        if (mode !== 'play') return;
+        const pr = { x: paddle.x - paddle.w / 2, y: paddle.y, w: paddle.w, h: paddle.h };
+        if (b.vy > 0 && circleRect(b, pr)) {
+          const off = Math.max(-1, Math.min(1, (b.x - paddle.x) / (paddle.w / 2)));
+          const a = off * (Math.PI / 3);
+          const sp = Math.min(Math.hypot(b.vx, b.vy) * 1.01, baseSpeed() * 1.45);
+          b.vx = Math.sin(a) * sp; b.vy = -Math.cos(a) * sp;
+          b.y = paddle.y - b.r - 0.5;
+          combo = 0;
+          sfx.paddle();
+        }
+      }
+      const sp = Math.hypot(b.vx, b.vy);
+      if (Math.abs(b.vy) < sp * 0.22) {
+        b.vy = Math.sign(b.vy || 1) * sp * 0.22;
+        b.vx = Math.sign(b.vx) * Math.sqrt(sp * sp - b.vy * b.vy);
+      }
+      if (b.y > H + b.r * 2) balls.splice(i, 1);
+    }
+    if (balls.length === 0) { loseLife(); return; }
+
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const d = drops[i];
+      d.y += d.vy * dt;
+      if (d.y + 11 > paddle.y && d.y - 11 < paddle.y + paddle.h && Math.abs(d.x - paddle.x) < paddle.w / 2 + 11) {
+        drops.splice(i, 1); applyPower(d.kind);
+      } else if (d.y > H + 20) drops.splice(i, 1);
+    }
+  }
+
+  function tickFx(dt) {
+    time += dt;
+    shake = Math.max(0, shake - dt * 20);
+    flash = Math.max(0, flash - dt * 1.5);
+    shownScore += (score - shownScore) * Math.min(1, dt * 8);
+    if (Math.abs(score - shownScore) < 0.5) shownScore = score;
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 420 * dt;
+      if (p.t > p.life) particles.splice(i, 1);
+    }
+    for (let i = floaters.length - 1; i >= 0; i--) {
+      const f = floaters[i];
+      f.t += dt; f.y -= 30 * dt;
+      if (f.t > 0.9) floaters.splice(i, 1);
+    }
+    for (const k of bricks) k.hit = Math.max(0, k.hit - dt);
+    if (toast && (toast.t += dt) > 1.8) toast = null;
+    if (banner && (banner.t += dt) > 1.4) banner = null;
+  }
+
+  // ---------- Drawing ----------
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function glow(x, y, r, a) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(0,217,255,' + a + ')');
+    g.addColorStop(1, 'rgba(0,217,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  function setSpacing(v) { if ('letterSpacing' in ctx) ctx.letterSpacing = v; }
+
+  function drawField() {
+    ctx.fillStyle = C.field;
+    ctx.fillRect(0, HB, W, H - HB);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, HB, W, H - HB); ctx.clip();
+    glow(W * 0.95, HB + 260, 260, 0.08);
+    glow(W * 0.1, H - 110, 300, 0.09);
+    glow(W * 0.5, H + 60, 240, 0.06);
+    ctx.restore();
+  }
+
+  function drawHeader() {
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, W, HB);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, W, HB); ctx.clip();
+    glow(W / 2, -30, 230, 0.1);
+    ctx.restore();
+    ctx.fillStyle = 'rgba(0,217,255,0.22)';
+    ctx.fillRect(0, HB - 1, W, 1);
+
+    ctx.textBaseline = 'alphabetic';
+    // Timer (left)
+    const secs = Math.ceil(roundLeft);
+    const mm = Math.floor(secs / 60), ss = secs % 60;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = secs <= 10 && mode !== 'title' ? C.danger : C.text;
+    ctx.font = '600 26px ' + FONT;
+    ctx.fillText(mm + ':' + String(ss).padStart(2, '0'), 22, 70);
+    ctx.fillStyle = C.muted;
+    ctx.font = '500 10px ' + FONT;
+    setSpacing('1.3px');
+    ctx.fillText('LIVES ' + lives + '  ·  LV ' + (levelIndex + 1), 22, 90);
+    // Score (center)
+    ctx.textAlign = 'center';
+    ctx.fillText('SCORE', W / 2, 36);
+    setSpacing('0px');
+    ctx.fillStyle = C.text;
+    ctx.font = '600 44px ' + FONT;
+    ctx.fillText(String(Math.round(shownScore)), W / 2, 82);
+  }
+
+  function drawBrick(k) {
+    const col = brickColor(k);
+    ctx.save();
+    ctx.shadowColor = col;
+    ctx.shadowBlur = k.type === 'stone' ? 0 : 6;
+    roundRect(k.x + 0.75, k.y + 0.75, k.w - 1.5, k.h - 1.5, 5);
+    ctx.fillStyle = k.hit > 0 ? '#1f2a38' : '#141b25';
+    ctx.fill();
+    ctx.strokeStyle = col;
+    ctx.globalAlpha = k.type === 'stone' ? 0.8 : 0.9;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+    const cx = k.x + k.w / 2, cy = k.y + k.h / 2;
+    if (k.type === 'stone') {
+      ctx.fillStyle = C.muted;
+      ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+    } else if (k.hp > 1) {
+      ctx.fillStyle = C.text;
+      ctx.font = '600 16px ' + FONT;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(k.hp), cx, cy + 1);
+    }
+  }
+
+  function drawPaddle() {
+    const { x, y, w, h } = paddle;
+    const left = x - w / 2;
+    const col = effects.fire > 0 ? C.warn : C.neon;
+    ctx.save();
+    ctx.shadowColor = col + '99';
+    ctx.shadowBlur = 16;
+    ctx.fillStyle = col;
+    // Wolf-ear notch pair
+    for (const ex of [x - 16, x + 6]) {
+      ctx.beginPath();
+      ctx.moveTo(ex, y + 2); ctx.lineTo(ex + 5, y - 7); ctx.lineTo(ex + 10, y + 2);
+      ctx.closePath(); ctx.fill();
+    }
+    roundRect(left, y, w, h, h / 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBall(b) {
+    for (let i = 0; i < b.trail.length; i++) {
+      const t = b.trail[i];
+      ctx.globalAlpha = (i / b.trail.length) * 0.18;
+      ctx.fillStyle = '#e6f4ff';
+      ctx.beginPath(); ctx.arc(t.x, t.y, b.r * (0.5 + 0.5 * i / b.trail.length), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.save();
+    ctx.shadowColor = effects.fire > 0 ? C.warn : 'rgba(230,244,255,0.6)';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = '#e6f4ff';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawDrop(d) {
+    const p = POWERS[d.kind];
+    ctx.save();
+    ctx.shadowColor = p.color; ctx.shadowBlur = 8;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(d.x, d.y, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = C.bg;
+    ctx.font = '700 13px ' + FONT;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(p.icon, d.x, d.y + 1);
+  }
+
+  function drawStatus() {
+    // Active effects (bottom-left) and combo (bottom-right), small and flat
+    ctx.textBaseline = 'middle';
+    ctx.font = '500 11px ' + FONT;
+    let ex = 16;
+    const y = H - 18;
+    for (const k of ['wide', 'fire', 'slow', 'shrink']) {
+      if (effects[k] <= 0) continue;
+      const color = k === 'shrink' ? C.danger : POWERS[k].color;
+      const label = k === 'shrink' ? 'Shrunk' : POWERS[k].label;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(ex + 4, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = C.muted;
+      ctx.textAlign = 'left';
+      const t = label + ' ' + Math.ceil(effects[k]) + 's';
+      ctx.fillText(t, ex + 12, y);
+      ex += 22 + ctx.measureText(t).width;
+    }
+    if (combo > 1) {
+      ctx.fillStyle = C.neon;
+      ctx.textAlign = 'right';
+      ctx.font = '600 12px ' + FONT;
+      ctx.fillText('×' + Math.min(combo, 8) + ' combo', W - 16, y);
+    }
+  }
+
+  function drawToast() {
+    const a = Math.max(0, Math.min(1, toast.t * 6, (1.8 - toast.t) * 4));
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.font = '600 14px ' + FONT;
+    const tw = ctx.measureText(toast.label).width;
+    const pw = tw + 44, ph = 34;
+    const px = W / 2 - pw / 2, py = HB + 14 - (1 - Math.min(1, toast.t * 5)) * 8;
+    roundRect(px, py, pw, ph, ph / 2);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.strokeStyle = toast.color + '66';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.shadowColor = toast.color; ctx.shadowBlur = 8;
+    ctx.fillStyle = toast.color;
+    ctx.beginPath(); ctx.arc(px + 18, py + ph / 2, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = C.text;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(toast.label, px + 30, py + ph / 2 + 1);
+    ctx.restore();
+  }
+
+  function drawBanner() {
+    const a = Math.max(0, Math.min(1, banner.t * 6, (1.4 - banner.t) * 4));
+    ctx.save();
+    ctx.globalAlpha = a;
+    const y = HB + (H - HB) * 0.55;
+    roundRect(W / 2 - 90, y - 30, 180, 60, 16);
+    ctx.fillStyle = 'rgba(10,15,22,0.9)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,217,255,0.35)';
+    ctx.stroke();
+    ctx.fillStyle = C.neon;
+    ctx.font = '600 26px ' + FONT;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(banner.text, W / 2, y + 1);
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.save();
+    if (shake > 0) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+    drawField();
+    for (const k of bricks) drawBrick(k);
+    for (const d of drops) drawDrop(d);
+    for (const p of particles) {
+      ctx.globalAlpha = Math.max(0, 1 - p.t / p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+    drawPaddle();
+    for (const b of balls) drawBall(b);
+    for (const f of floaters) {
+      ctx.globalAlpha = Math.max(0, 1 - f.t / 0.9);
+      ctx.fillStyle = f.color || C.neon;
+      ctx.font = '600 14px ' + FONT;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(f.text, f.x, f.y);
+    }
+    ctx.globalAlpha = 1;
+    drawStatus();
+    if (mode === 'play' && balls.some(b => b.stuck) && !banner) {
+      ctx.fillStyle = 'rgba(216,224,234,' + (0.45 + Math.sin(time * 4) * 0.2) + ')';
+      ctx.font = '500 13px ' + FONT;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Tap, click or press Space to launch', W / 2, H - 110);
+    }
+    if (mode === 'count' || (mode === 'paused' && pausedFrom === 'count')) {
+      const n = Math.ceil(countT);
+      const f = countT - Math.floor(countT);
+      ctx.globalAlpha = 0.35 + 0.5 * f;
+      ctx.fillStyle = C.text;
+      ctx.font = '600 72px ' + FONT;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(n), W / 2, HB + (H - HB) * 0.6);
+      ctx.globalAlpha = 1;
+    }
+    if (banner) drawBanner();
+    if (toast) drawToast();
+    ctx.restore();
+    drawHeader();
+    if (flash > 0) {
+      ctx.fillStyle = 'rgba(154,240,255,' + flash * 0.25 + ')';
+      ctx.fillRect(0, HB, W, H - HB);
+    }
+  }
+
+  // ---------- Canvas sizing ----------
+  function fit() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // ---------- Loop ----------
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    if (mode === 'play') update(dt);
+    else if (mode === 'count') {
+      updatePaddle(dt);
+      const before = Math.ceil(countT);
+      countT -= dt;
+      if (countT <= 0) {
+        mode = 'play';
+        hubPost('round-start');
+        if (launchQueued) launch();
+        launchQueued = false;
+      } else if (Math.ceil(countT) !== before) sfx.tick();
+    }
+    tickFx(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  buildLevel(0);
+  showScreen('title');
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
