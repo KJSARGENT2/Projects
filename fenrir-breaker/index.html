@@ -10,13 +10,13 @@
 <style>
   :root {
     color-scheme: dark;
-    --night: #0b111c;
-    --fjord: #142033;
-    --frost: #dfe8f0;
-    --mist: #8d9bb0;
-    --aurora: #5fd3b8;
-    --ember: #e0a64a;
-    --blood: #c4473a;
+    --night: #05080d;
+    --fjord: #0a0f16;
+    --frost: #d8e0ea;
+    --mist: #7d8899;
+    --aurora: #9af0ff;
+    --ember: #00d9ff;
+    --blood: #ff3d71;
     --display: "Metamorphous", "Cinzel", Georgia, serif;
     --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
   }
@@ -24,7 +24,7 @@
   [hidden] { display: none !important; }
   body {
     margin: 0;
-    background: radial-gradient(120% 80% at 50% 0%, #1a2a40 0%, var(--night) 60%);
+    background: radial-gradient(120% 80% at 50% 0%, #0b1a2a 0%, var(--night) 60%);
     color: var(--frost);
     font-family: var(--body);
     font-size: 16px;
@@ -70,7 +70,7 @@
     aspect-ratio: 9 / 16;
     border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 0 0 1px #2a3a52, 0 20px 60px #0008;
+    box-shadow: 0 0 0 1px #00d9ff38, 0 0 40px #00d9ff22, 0 20px 60px #0008;
   }
   canvas {
     display: block;
@@ -89,7 +89,7 @@
     gap: 14px;
     padding: 28px;
     text-align: center;
-    background: #0b111ccc;
+    background: #05080dd9;
     backdrop-filter: blur(2px);
     overflow-y: auto;
   }
@@ -130,8 +130,9 @@
     border-radius: 3px;
     padding: 10px 22px;
     cursor: pointer;
+    box-shadow: 0 0 18px #00d9ff66;
   }
-  .overlay button:hover { background: #f0bb64; }
+  .overlay button:hover { background: #5fe6ff; }
   .overlay button:focus-visible, .icon-btn:focus-visible { outline: 2px solid var(--aurora); outline-offset: 3px; }
   .help {
     font-size: 0.8rem;
@@ -170,7 +171,7 @@
     font: 500 0.8rem var(--body);
     color: var(--frost);
     background: transparent;
-    border: 1px solid #2a3a52;
+    border: 1px solid #00d9ff38;
     border-radius: 3px;
     padding: 4px 10px;
     cursor: pointer;
@@ -205,20 +206,20 @@
     <div class="runes" id="ov-runes">ᚠᛖᚾᚱᛁᚱ</div>
     <p id="ov-text">The gods chained the great wolf three times. Break the fetters link by link and set him free.</p>
     <div class="legend" id="ov-legend">
-      <i style="background:#e0a64a">ᚹ</i><span>Howl: wider jaws</span>
-      <i style="background:#5fd3b8">ᛗ</i><span>Sköll &amp; Hati: two more moons</span>
-      <i style="background:#c4473a">ᚲ</i><span>Surtr's fire: burn through links</span>
-      <i style="background:#9fc6ee">ᛁ</i><span>Fimbulwinter: slow the moon</span>
-      <i style="background:#dfe8f0">ᛟ</i><span>Mead of Odin: extra life</span>
+      <i style="background:#00d9ff">ᚹ</i><span>Howl: wider jaws</span>
+      <i style="background:#9af0ff">ᛗ</i><span>Sköll &amp; Hati: two more moons</span>
+      <i style="background:#ff3d71">ᚲ</i><span>Surtr's fire: burn through links</span>
+      <i style="background:#1f6bff">ᛁ</i><span>Fimbulwinter: slow the moon</span>
+      <i style="background:#d8e0ea">ᛟ</i><span>Mead of Odin: extra life</span>
     </div>
     <div class="legend" id="ov-viewer">
       <span class="eyebrow" style="grid-column:1/-1">Viewer actions (keys 1–6)</span>
-      <i style="background:#5fd3b8">1</i><span>Sköll &amp; Hati: two more moons</span>
-      <i style="background:#e0a64a">2</i><span>Howl: wider jaws</span>
-      <i style="background:#c4473a">3</i><span>Surtr's fire: burn through links</span>
-      <i style="background:#dfe8f0">4</i><span>Mead of Odin: extra life</span>
-      <i style="background:#8e9aa6">5</i><span>Loki's chains: a new row of links</span>
-      <i style="background:#8e9aa6">6</i><span>Jörmungandr's fury: faster moon, smaller jaws</span>
+      <i style="background:#9af0ff">1</i><span>Sköll &amp; Hati: two more moons</span>
+      <i style="background:#00d9ff">2</i><span>Howl: wider jaws</span>
+      <i style="background:#ff3d71">3</i><span>Surtr's fire: burn through links</span>
+      <i style="background:#d8e0ea">4</i><span>Mead of Odin: extra life</span>
+      <i style="background:#5b86b3">5</i><span>Loki's chains: a new row of links</span>
+      <i style="background:#5b86b3">6</i><span>Jörmungandr's fury: faster moon, smaller jaws</span>
     </div>
     <button id="ov-btn" type="button">Break the chains</button>
     <div class="help">Move: mouse, touch or ← → · Launch: click, tap or Space · Pause: P · H: hide chrome</div>
@@ -306,11 +307,11 @@
   };
   const RUNES = 'ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
   const POWERS = {
-    wide:  { rune: 'ᚹ', color: '#e0a64a', label: 'Howl' },
-    multi: { rune: 'ᛗ', color: '#5fd3b8', label: 'Sköll & Hati' },
-    fire:  { rune: 'ᚲ', color: '#c4473a', label: "Surtr's fire" },
-    slow:  { rune: 'ᛁ', color: '#9fc6ee', label: 'Fimbulwinter' },
-    life:  { rune: 'ᛟ', color: '#dfe8f0', label: 'Mead of Odin' },
+    wide:  { rune: 'ᚹ', color: '#00d9ff', label: 'Howl' },
+    multi: { rune: 'ᛗ', color: '#9af0ff', label: 'Sköll & Hati' },
+    fire:  { rune: 'ᚲ', color: '#ff3d71', label: "Surtr's fire" },
+    slow:  { rune: 'ᛁ', color: '#1f6bff', label: 'Fimbulwinter' },
+    life:  { rune: 'ᛟ', color: '#d8e0ea', label: 'Mead of Odin' },
   };
   const POWER_BAG = ['wide', 'wide', 'multi', 'multi', 'fire', 'slow', 'slow', 'life'];
 
@@ -505,8 +506,8 @@
     2: { power: 'wide' },
     3: { power: 'fire' },
     4: { power: 'life' },
-    5: { rune: 'ᛚ', label: "Loki's chains", color: '#8e9aa6', run: lokisChains },
-    6: { rune: 'ᛃ', label: "Jörmungandr's fury", color: '#c4473a', run: jormungandr },
+    5: { rune: 'ᛚ', label: "Loki's chains", color: '#5b86b3', run: lokisChains },
+    6: { rune: 'ᛃ', label: "Jörmungandr's fury", color: '#ff3d71', run: jormungandr },
   };
   let toast = null;
   function showToast(rune, label, color) { toast = { rune, label, color, t: 0 }; }
@@ -555,7 +556,7 @@
     }
   }
   function brickColor(k) {
-    return { leather: '#a06a43', iron: '#8e9aa6', silk: '#bfeee2', stone: '#3a4558' }[k.type];
+    return { leather: '#1f6bff', iron: '#5b86b3', silk: '#9af0ff', stone: '#111a28' }[k.type];
   }
 
   function damage(k, ball) {
@@ -747,9 +748,9 @@
 
   function drawSky() {
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#0a1020');
-    g.addColorStop(0.7, '#132238');
-    g.addColorStop(1, '#1b2d44');
+    g.addColorStop(0, '#05080d');
+    g.addColorStop(0.7, '#07101c');
+    g.addColorStop(1, '#0b1a2a');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
@@ -762,7 +763,7 @@
         const y = 150 + band * 60 + Math.sin(x * 0.012 + time * 0.3 + band * 2) * 40 + Math.sin(x * 0.03 - time * 0.5) * 12;
         x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = band ? 'rgba(120,110,220,0.07)' : 'rgba(95,211,184,0.09)';
+      ctx.strokeStyle = band ? 'rgba(31,107,255,0.08)' : 'rgba(0,217,255,0.08)';
       ctx.lineWidth = 60;
       ctx.stroke();
     }
@@ -770,19 +771,24 @@
 
     for (const s of stars) {
       ctx.globalAlpha = 0.35 + Math.sin(time * 1.5 + s.p) * 0.3;
-      ctx.fillStyle = '#dfe8f0';
+      ctx.fillStyle = '#d8e0ea';
       ctx.fillRect(s.x, s.y, s.r, s.r);
     }
     ctx.globalAlpha = 1;
 
     // Mountains
-    ctx.fillStyle = '#0e1828';
+    ctx.fillStyle = '#0a0f16';
     ctx.beginPath();
     ctx.moveTo(0, H);
     const peaks = [[0, 560], [60, 520], [120, 555], [190, 490], [260, 548], [330, 505], [400, 545], [480, 515]];
     for (const [x, y] of peaks) ctx.lineTo(x, y + H - 640);
     ctx.lineTo(W, H);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(0,217,255,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (const [x, y] of peaks) ctx.lineTo(x, y + H - 640);
+    ctx.stroke();
   }
 
   function drawBrick(k) {
@@ -792,17 +798,20 @@
     ctx.translate(k.x, k.y);
 
     if (k.type === 'silk') {
-      ctx.shadowColor = '#5fd3b8';
+      ctx.shadowColor = '#00d9ff';
       ctx.shadowBlur = 8 + Math.sin(time * 3 + k.x) * 3;
     }
     roundRect(0, 0, k.w, k.h, 9);
     ctx.fillStyle = pulse ? '#ffffff' : base;
     ctx.fill();
     ctx.shadowBlur = 0;
+    ctx.strokeStyle = k.type === 'stone' ? 'rgba(0,217,255,0.35)' : 'rgba(154,240,255,0.55)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
     // Chain-link slot
     roundRect(7, 6, k.w - 14, k.h - 12, 4);
-    ctx.fillStyle = 'rgba(8,14,26,0.55)';
+    ctx.fillStyle = 'rgba(5,8,13,0.6)';
     ctx.fill();
 
     // Top highlight
@@ -811,7 +820,7 @@
     ctx.fill();
 
     if (k.type === 'stone' || k.type === 'silk') {
-      ctx.fillStyle = k.type === 'stone' ? '#e0a64a' : '#0f3a33';
+      ctx.fillStyle = k.type === 'stone' ? '#00d9ff' : '#05080d';
       ctx.font = '11px "Noto Sans Runic", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -820,7 +829,7 @@
 
     // Cracks as the fetter weakens
     if (k.max !== Infinity && k.hp < k.max) {
-      ctx.strokeStyle = 'rgba(10,16,28,0.8)';
+      ctx.strokeStyle = 'rgba(5,8,13,0.85)';
       ctx.lineWidth = 1.2;
       const n = k.max - k.hp;
       for (let i = 0; i < n; i++) {
@@ -838,8 +847,8 @@
     const left = x - w / 2;
     ctx.save();
     // Glow when enchanted
-    if (effects.fire > 0) { ctx.shadowColor = '#c4473a'; ctx.shadowBlur = 16; }
-    else if (effects.wide > 0) { ctx.shadowColor = '#e0a64a'; ctx.shadowBlur = 12; }
+    if (effects.fire > 0) { ctx.shadowColor = '#ff3d71'; ctx.shadowBlur = 16; }
+    else if (effects.wide > 0) { ctx.shadowColor = '#00d9ff'; ctx.shadowBlur = 12; }
 
     // Ears
     ctx.fillStyle = '#6f7d8f';
@@ -873,7 +882,7 @@
     }
 
     // Eyes
-    ctx.fillStyle = effects.fire > 0 ? '#ff6a4d' : '#e0a64a';
+    ctx.fillStyle = effects.fire > 0 ? '#ff3d71' : '#00d9ff';
     ctx.shadowColor = ctx.fillStyle;
     ctx.shadowBlur = 6;
     ctx.beginPath(); ctx.ellipse(x - 10, y + 6, 3.2, 2, -0.3, 0, Math.PI * 2); ctx.fill();
@@ -890,16 +899,16 @@
     for (let i = 0; i < b.trail.length; i++) {
       const t = b.trail[i];
       ctx.globalAlpha = (i / b.trail.length) * 0.35;
-      ctx.fillStyle = fire ? '#ff7a4d' : '#9fc6ee';
+      ctx.fillStyle = fire ? '#ff3d71' : '#1f6bff';
       ctx.beginPath(); ctx.arc(t.x, t.y, b.r * (0.4 + 0.6 * i / b.trail.length), 0, Math.PI * 2); ctx.fill();
     }
     ctx.globalAlpha = 1;
     ctx.save();
-    ctx.shadowColor = fire ? '#ff6a4d' : '#dfe8f0';
+    ctx.shadowColor = fire ? '#ff3d71' : '#d8e0ea';
     ctx.shadowBlur = 14;
     const g = ctx.createRadialGradient(b.x - 2, b.y - 2, 1, b.x, b.y, b.r);
-    g.addColorStop(0, fire ? '#fff1c9' : '#ffffff');
-    g.addColorStop(1, fire ? '#e0663a' : '#b8c7da');
+    g.addColorStop(0, fire ? '#ffe3ec' : '#ffffff');
+    g.addColorStop(1, fire ? '#ff3d71' : '#b8c7da');
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
     ctx.shadowBlur = 0;
@@ -917,7 +926,7 @@
     ctx.fillStyle = p.color;
     ctx.beginPath(); ctx.arc(d.x, d.y, 11, 0, Math.PI * 2); ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#0b111c';
+    ctx.fillStyle = '#05080d';
     ctx.font = '13px "Noto Sans Runic", serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(p.rune, d.x, d.y + 1);
@@ -925,12 +934,12 @@
   }
 
   function drawTopBar() {
-    ctx.fillStyle = 'rgba(11,17,28,0.55)';
+    ctx.fillStyle = 'rgba(5,8,13,0.55)';
     ctx.fillRect(0, 0, W, 40);
     ctx.font = '15px Metamorphous, Georgia, serif';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#dfe8f0';
+    ctx.fillStyle = '#d8e0ea';
     const L = LEVELS[levelIndex % LEVELS.length];
     ctx.fillText(L.name, 16, 21);
     // Active effects as timers
@@ -938,7 +947,7 @@
     ctx.textAlign = 'right';
     for (const k of ['shrink', 'slow', 'fire', 'wide']) {
       if (effects[k] <= 0) continue;
-      const p = k === 'shrink' ? { rune: 'ᛃ', color: '#8e9aa6' } : POWERS[k];
+      const p = k === 'shrink' ? { rune: 'ᛃ', color: '#5b86b3' } : POWERS[k];
       ctx.fillStyle = p.color;
       ctx.font = '13px "Noto Sans Runic", serif';
       ctx.fillText(p.rune, ex - 22, 21);
@@ -947,7 +956,7 @@
       ex -= 52;
     }
     if (combo > 1) {
-      ctx.fillStyle = '#e0a64a';
+      ctx.fillStyle = '#00d9ff';
       ctx.font = '13px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('×' + Math.min(combo, 8) + ' combo', W / 2, 21);
@@ -970,7 +979,7 @@
     for (const b of balls) drawBall(b);
     for (const f of floaters) {
       ctx.globalAlpha = 1 - f.t / 0.9;
-      ctx.fillStyle = f.color || '#e0a64a';
+      ctx.fillStyle = f.color || '#00d9ff';
       ctx.font = '600 14px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(f.text, f.x, f.y);
@@ -987,14 +996,14 @@
       const a = Math.min(1, toast.t * 6, (2.2 - toast.t) * 3);
       const y = H * 0.42 - Math.min(1, toast.t * 5) * 12;
       ctx.globalAlpha = a;
-      ctx.fillStyle = 'rgba(11,17,28,0.8)';
+      ctx.fillStyle = 'rgba(5,8,13,0.8)';
       ctx.fillRect(0, y - 34, W, 68);
       ctx.fillStyle = toast.color;
       ctx.fillRect(0, y - 34, W, 2); ctx.fillRect(0, y + 32, W, 2);
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = '28px Metamorphous, Georgia, serif';
       const lw = ctx.measureText(toast.label).width;
-      ctx.fillStyle = '#dfe8f0';
+      ctx.fillStyle = '#d8e0ea';
       ctx.fillText(toast.label, W / 2 + 18, y);
       ctx.fillStyle = toast.color;
       ctx.font = '26px "Noto Sans Runic", serif';
@@ -1002,7 +1011,7 @@
       ctx.globalAlpha = 1;
     }
     if (flash > 0) {
-      ctx.fillStyle = 'rgba(191,238,226,' + flash * 0.4 + ')';
+      ctx.fillStyle = 'rgba(154,240,255,' + flash * 0.4 + ')';
       ctx.fillRect(0, 0, W, H);
     }
     ctx.restore();
