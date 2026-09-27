@@ -15,7 +15,6 @@ Single-file browser games built for streaming with the [Fenrir](https://fenrirap
 | Fenrir's Tower | `fenrir-stacker/` | Block stacker |
 | Fenrir Flight | `fenrir-flight/` | Jetpack-style endless runner |
 | Fenrir Volley | `fenrir-volley/` | Ballz-style volley block breaker |
-| Fenrir Siege | `fenrir-siege/` | Clash-style base raid |
 
 All of them share the same stream setup:
 
@@ -24,3 +23,7 @@ All of them share the same stream setup:
 - **Hands-free:** Enter or Space starts; rounds last 3:00 (Volley is endless) and restart on their own after a countdown.
 - **H** hides the header and buttons so only the game shows in a window capture.
 - **P** or **Esc** pauses.
+
+## Fenrir Siege
+
+A standalone Norse village-builder and raid game in `fenrir-siege/` (not part of the arcade).

@@ -453,9 +453,6 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--neon);
     { id: 'volley', name: 'Fenrir Volley', genre: 'Ball volley', src: 'fenrir-volley/index.html', par: 1500,
       blurb: 'Aim the volley, break numbered blocks before they reach you.', tint: ['#083640', '#05080d'],
       actions: [['Pack call', '+5 balls, permanent', 0], ['Howl', 'clears the lowest row', 0], ['Frost', 'halves every block', 0], ["Loki's wall", 'blocks drop + new row', 1], ['Iron hide', 'top two rows doubled', 1], ['Split', 'every ball splits in two', 0]] },
-    { id: 'siege', name: 'Fenrir Siege', genre: 'Raid', src: 'fenrir-siege/index.html', par: 2000, isNew: true,
-      blurb: 'Drop your pack around the village. Take the Great Hall.', tint: ['#3a1418', '#05080d'],
-      actions: [['Wolf pack', 'drops 6 Wolves', 0], ['Jötunn', 'drops 1 giant', 0], ['Raven flock', 'drops 4 Ravens', 0], ['Rage howl', '+50% speed & damage 8s', 0], ['Rebuild', 'heals village, restores a wall', 1], ['Reinforce', 'a new Arrow tower', 1]] },
   ];
   const GAME = Object.fromEntries(GAMES.map(g => [g.id, g]));
   const maxReward = g => roundReward(g, g.par * 3);
@@ -541,7 +538,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--neon);
     { id: 'first', name: 'First Howl', desc: 'Finish your first round', goal: 1, val: () => S.rounds, gems: 2 },
     { id: 'r25', name: 'Regular', desc: 'Finish 25 rounds', goal: 25, val: () => S.rounds, gems: 5 },
     { id: 'r100', name: 'Arcade Wolf', desc: 'Finish 100 rounds', goal: 100, val: () => S.rounds, gems: 15 },
-    { id: 'all6', name: 'Explorer', desc: 'Play all 6 games', goal: 6, val: () => Object.keys(S.plays).length, gems: 5 },
+    { id: 'all6', name: 'Explorer', desc: 'Play all 5 games', goal: 5, val: () => Object.keys(S.plays).length, gems: 5 },
     { id: 's5k', name: 'High Scorer', desc: 'Score 5,000 in any game', goal: 5000, val: maxBest, gems: 5 },
     { id: 'v25', name: 'Crowd Pleaser', desc: 'Trigger 25 viewer actions', goal: 25, val: () => S.viewerTotal, gems: 5 },
     { id: 'v200', name: 'Showrunner', desc: 'Trigger 200 viewer actions', goal: 200, val: () => S.viewerTotal, gems: 15 },
