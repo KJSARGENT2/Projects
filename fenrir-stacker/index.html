@@ -10,13 +10,16 @@
 <style>
   :root {
     color-scheme: dark;
-    --night: #0b111c;
-    --fjord: #142033;
-    --frost: #dfe8f0;
-    --mist: #8d9bb0;
-    --aurora: #5fd3b8;
-    --ember: #e0a64a;
-    --blood: #c4473a;
+    --night: #05080d;
+    --fjord: #0a0f16;
+    --frost: #d8e0ea;
+    --mist: #7d8899;
+    --aurora: #00d9ff;
+    --ember: #00d9ff;
+    --blood: #ff3d71;
+    --neon-deep: #1f6bff;
+    --neon-ice: #9af0ff;
+    --line: #00d9ff38;
     --display: "Metamorphous", "Cinzel", Georgia, serif;
     --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
   }
@@ -24,7 +27,7 @@
   [hidden] { display: none !important; }
   body {
     margin: 0;
-    background: radial-gradient(120% 80% at 50% 0%, #1a2a40 0%, var(--night) 60%);
+    background: radial-gradient(120% 80% at 50% 0%, #0b1a2a 0%, #05080d 60%);
     color: var(--frost);
     font-family: var(--body);
     font-size: 16px;
@@ -70,7 +73,7 @@
     aspect-ratio: 9 / 16;
     border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 0 0 1px #2a3a52, 0 20px 60px #0008;
+    box-shadow: 0 0 0 1px var(--line), 0 0 40px #00d9ff22, 0 20px 60px #000a;
   }
   canvas {
     display: block;
@@ -89,7 +92,7 @@
     gap: 14px;
     padding: 28px;
     text-align: center;
-    background: #0b111ccc;
+    background: #05080dd9;
     backdrop-filter: blur(2px);
   }
   .overlay .eyebrow {
@@ -110,7 +113,7 @@
     margin: 0;
     max-width: 32ch;
     line-height: 1.45;
-    color: #c3cedb;
+    color: var(--frost);
     text-wrap: pretty;
   }
   .overlay .runes {
@@ -129,8 +132,9 @@
     border-radius: 3px;
     padding: 10px 22px;
     cursor: pointer;
+    box-shadow: 0 0 18px #00d9ff66;
   }
-  .overlay button:hover { background: #f0bb64; }
+  .overlay button:hover { background: #5fe6ff; }
   .overlay button:focus-visible, .icon-btn:focus-visible { outline: 2px solid var(--aurora); outline-offset: 3px; }
   .help {
     font-size: 0.8rem;
@@ -155,13 +159,13 @@
     gap: 4px 10px;
     text-align: left;
     font-size: 0.85rem;
-    color: #c3cedb;
+    color: var(--frost);
     align-items: center;
   }
   .legend kbd {
     font: 700 0.8rem var(--body);
     color: var(--frost);
-    border: 1px solid #2a3a52;
+    border: 1px solid var(--line);
     border-radius: 3px;
     padding: 0 6px;
   }
@@ -176,7 +180,7 @@
     place-items: center;
     font-size: 0.8rem;
   }
-  .legend .bad { color: #e8a69e; }
+  .legend .bad { color: #ff8fab; }
   .controls {
     width: 100%;
     max-width: 480px;
@@ -190,7 +194,7 @@
     font: 500 0.8rem var(--body);
     color: var(--frost);
     background: transparent;
-    border: 1px solid #2a3a52;
+    border: 1px solid var(--line);
     border-radius: 3px;
     padding: 4px 10px;
     cursor: pointer;
@@ -238,12 +242,12 @@
     <p id="ov-text">His son Hati chases the moon across the sky. Fenrir wants to get there first. Stack stone for him to climb.</p>
     <div class="legend-title" id="ov-legend-title">Viewer actions (keys 1–6)</div>
     <div class="legend" id="ov-legend">
-      <kbd>1</kbd><i style="background:#e0a64a">ᚨ</i><span>Odin's eye: next drop is perfect</span>
-      <kbd>2</kbd><i style="background:#5fd3b8">ᛒ</i><span>Brokkr's forge: block widens</span>
-      <kbd>3</kbd><i style="background:#9fc6ee">ᛁ</i><span>Fimbulwinter: slow slide, 10s</span>
-      <kbd>4</kbd><i style="background:#c4473a">ᚱ</i><span class="bad">Loki's haste: fast slide, 10s</span>
-      <kbd>5</kbd><i style="background:#c4473a">ᚾ</i><span class="bad">Gleipnir tightens: block shrinks</span>
-      <kbd>6</kbd><i style="background:#c4473a">ᚺ</i><span class="bad">Jötunn storm: wild wind, 8s</span>
+      <kbd>1</kbd><i style="background:#00d9ff">ᚨ</i><span>Odin's eye: next drop is perfect</span>
+      <kbd>2</kbd><i style="background:#00d9ff">ᛒ</i><span>Brokkr's forge: block widens</span>
+      <kbd>3</kbd><i style="background:#9af0ff">ᛁ</i><span>Fimbulwinter: slow slide, 10s</span>
+      <kbd>4</kbd><i style="background:#ff3d71">ᚱ</i><span class="bad">Loki's haste: fast slide, 10s</span>
+      <kbd>5</kbd><i style="background:#ff3d71">ᚾ</i><span class="bad">Gleipnir tightens: block shrinks</span>
+      <kbd>6</kbd><i style="background:#ff3d71">ᚺ</i><span class="bad">Jötunn storm: wild wind, 8s</span>
     </div>
     <button id="ov-btn" type="button">Start building</button>
     <div class="countdown" id="ov-count" hidden></div>
@@ -284,12 +288,12 @@
     { m: 240, name: 'The Moon',          sub: "Máni's road through the night" },
   ];
   const ACTIONS = {
-    '1': { id: 'odin',   rune: 'ᚨ', color: '#e0a64a', name: "Odin's eye",        sub: 'The next drop lands true', good: true },
-    '2': { id: 'widen',  rune: 'ᛒ', color: '#5fd3b8', name: "Brokkr's forge",    sub: 'The stone grows wider', good: true },
-    '3': { id: 'slow',   rune: 'ᛁ', color: '#9fc6ee', name: 'Fimbulwinter',      sub: 'The slide freezes slow', good: true },
-    '4': { id: 'haste',  rune: 'ᚱ', color: '#c4473a', name: "Loki's haste",      sub: 'The slide speeds up', good: false },
-    '5': { id: 'shrink', rune: 'ᚾ', color: '#c4473a', name: 'Gleipnir tightens', sub: 'The stone shrinks', good: false },
-    '6': { id: 'storm',  rune: 'ᚺ', color: '#c4473a', name: 'Jötunn storm',      sub: 'Wild wind shakes the stone', good: false },
+    '1': { id: 'odin',   rune: 'ᚨ', color: '#00d9ff', name: "Odin's eye",        sub: 'The next drop lands true', good: true },
+    '2': { id: 'widen',  rune: 'ᛒ', color: '#00d9ff', name: "Brokkr's forge",    sub: 'The stone grows wider', good: true },
+    '3': { id: 'slow',   rune: 'ᛁ', color: '#9af0ff', name: 'Fimbulwinter',      sub: 'The slide freezes slow', good: true },
+    '4': { id: 'haste',  rune: 'ᚱ', color: '#ff3d71', name: "Loki's haste",      sub: 'The slide speeds up', good: false },
+    '5': { id: 'shrink', rune: 'ᚾ', color: '#ff3d71', name: 'Gleipnir tightens', sub: 'The stone shrinks', good: false },
+    '6': { id: 'storm',  rune: 'ᚺ', color: '#ff3d71', name: 'Jötunn storm',      sub: 'Wild wind shakes the stone', good: false },
   };
 
   // ---------- State ----------
@@ -532,7 +536,7 @@
       particles.push({
         x: px + (Math.random() - 0.5) * 10, y: y + BH - Math.random() * 4,
         vx: (side ? 1 : -1) * (40 + Math.random() * 90), vy: -40 - Math.random() * 70,
-        life: 0.5 + Math.random() * 0.5, t: 0, size: Math.random() * 3 + 1.5, color: color || '#9aa6b5',
+        life: 0.5 + Math.random() * 0.5, t: 0, size: Math.random() * 3 + 1.5, color: color || '#6f8bb0',
       });
     }
   }
@@ -567,12 +571,12 @@
       }
       const bonus = 10 * Math.min(streak, 5);
       score += 10 + bonus;
-      floaters.push({ x: c.x + c.w / 2, y: c.y - 14, text: label + '  +' + (10 + bonus), t: 0, color: '#e0a64a' });
+      floaters.push({ x: c.x + c.w / 2, y: c.y - 14, text: label + '  +' + (10 + bonus), t: 0, color: '#9af0ff' });
       c.hit = 1;
       sfx.perfect(streak);
       sfx.place();
       shake = Math.max(shake, 2);
-      dust(c.x, c.y, c.w, 12, '#e0c38a');
+      dust(c.x, c.y, c.w, 12, '#9af0ff');
     } else {
       streak = 0;
       const leftCut = c.x < L;
@@ -582,7 +586,7 @@
       debris.push({ x: px, y: c.y, w: pw, row: c.row, vx: side * (60 + Math.random() * 60), vy: -60, rot: 0, vr: side * (2 + Math.random() * 2.5) });
       c.x = L; c.w = R - L;
       score += 10;
-      floaters.push({ x: c.x + c.w / 2, y: c.y - 14, text: '+10', t: 0, color: '#dfe8f0' });
+      floaters.push({ x: c.x + c.w / 2, y: c.y - 14, text: '+10', t: 0, color: '#d8e0ea' });
       sfx.place(); sfx.slice();
       shake = Math.max(shake, 3.5);
       dust(c.x, c.y, c.w, 10);
@@ -699,8 +703,8 @@
     const p = clamp(skyM / MOON_M, 0, 1);
     // fjord night -> aurora -> starfield
     let topC, botC;
-    if (p < 0.45) { const t = p / 0.45; topC = mix('#0d1a2e', '#06121c', t); botC = mix('#27405e', '#0f3038', t); }
-    else { const t = (p - 0.45) / 0.55; topC = mix('#06121c', '#020308', t); botC = mix('#0f3038', '#0c0f24', t); }
+    if (p < 0.45) { const t = p / 0.45; topC = mix('#05080d', '#040a14', t); botC = mix('#0a1422', '#0b2140', t); }
+    else { const t = (p - 0.45) / 0.55; topC = mix('#040a14', '#03060c', t); botC = mix('#0b2140', '#063a52', t); }
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, topC);
     g.addColorStop(1, botC);
@@ -713,7 +717,7 @@
       if (a <= 0) continue;
       const sy = (s.y + cam * 0.04) % H;
       ctx.globalAlpha = a * (0.55 + Math.sin(time * 1.5 + s.p) * 0.35);
-      ctx.fillStyle = '#dfe8f0';
+      ctx.fillStyle = s.k > 0.7 ? '#9af0ff' : '#d8e0ea';
       ctx.fillRect(s.x, sy, s.r, s.r);
     }
     ctx.globalAlpha = 1;
@@ -728,14 +732,14 @@
         const y = H * 0.22 + band * 70 + Math.sin(x * 0.011 + time * 0.3 + band * 2) * 50 + Math.sin(x * 0.03 - time * 0.5) * 14;
         x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = band === 1 ? 'rgba(120,110,220,' + 0.08 * au + ')' : 'rgba(95,211,184,' + 0.11 * au + ')';
+      ctx.strokeStyle = band === 1 ? 'rgba(31,107,255,' + 0.10 * au + ')' : 'rgba(0,217,255,' + 0.09 * au + ')';
       ctx.lineWidth = 70;
       ctx.stroke();
     }
     // Bifröst: a faint rainbow while passing the bridge
     const bi = bell(skyM, 55, 45);
     if (bi > 0) {
-      const cols = ['#c4473a', '#e0a64a', '#e8d86a', '#5fd3b8', '#6f8fe0', '#9a74d8'];
+      const cols = ['#1f6bff', '#1f6bff', '#00d9ff', '#00d9ff', '#7a5cff', '#7a5cff'];
       cols.forEach((c, i) => {
         ctx.strokeStyle = c;
         ctx.globalAlpha = 0.11 * bi;
@@ -753,16 +757,16 @@
     const mx = W * 0.72 - p * 40, my = H * 0.13 + p * 50;
     ctx.save();
     const glow = ctx.createRadialGradient(mx, my, mr * 0.6, mx, my, mr * 2.6);
-    glow.addColorStop(0, 'rgba(223,232,240,0.22)');
-    glow.addColorStop(1, 'rgba(223,232,240,0)');
+    glow.addColorStop(0, 'rgba(0,217,255,0.22)');
+    glow.addColorStop(1, 'rgba(0,217,255,0)');
     ctx.fillStyle = glow;
     ctx.fillRect(mx - mr * 3, my - mr * 3, mr * 6, mr * 6);
     const mg = ctx.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, mr * 0.1, mx, my, mr);
-    mg.addColorStop(0, '#fbfcf7');
-    mg.addColorStop(1, '#bcc8d6');
+    mg.addColorStop(0, '#e6f4ff');
+    mg.addColorStop(1, '#a9c4dc');
     ctx.fillStyle = mg;
     ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(110,125,150,0.28)';
+    ctx.fillStyle = 'rgba(70,110,150,0.25)';
     for (const [cx, cy, cr] of [[0.3, -0.2, 0.18], [-0.35, 0.25, 0.14], [0.05, 0.4, 0.1], [-0.2, -0.35, 0.08]]) {
       ctx.beginPath(); ctx.arc(mx + cx * mr, my + cy * mr, cr * mr, 0, Math.PI * 2); ctx.fill();
     }
@@ -770,14 +774,19 @@
 
     // Far fjord walls, sliding away with parallax
     const fy = cam * 0.35;
-    ctx.fillStyle = '#101c2d';
+    ctx.fillStyle = '#0a0f16';
     ctx.beginPath();
     ctx.moveTo(0, H + fy);
     for (const [x, y] of [[0, 560], [50, 520], [110, 575], [160, 600], [320, 610], [370, 560], [420, 510], [480, 540]]) ctx.lineTo(x, H * y / 640 + fy);
     ctx.lineTo(W, H + fy);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(0,217,255,0.22)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    [[0, 560], [50, 520], [110, 575], [160, 600], [320, 610], [370, 560], [420, 510], [480, 540]].forEach(([x, y], i) => i ? ctx.lineTo(x, H * y / 640 + fy) : ctx.moveTo(x, H * y / 640 + fy));
+    ctx.stroke();
     // Snow caps
-    ctx.fillStyle = 'rgba(223,232,240,0.12)';
+    ctx.fillStyle = 'rgba(154,240,255,0.10)';
     ctx.beginPath(); ctx.moveTo(35, H * 530 / 640 + fy); ctx.lineTo(50, H * 520 / 640 + fy); ctx.lineTo(66, H * 532 / 640 + fy); ctx.fill();
     ctx.beginPath(); ctx.moveTo(405, H * 522 / 640 + fy); ctx.lineTo(420, H * 510 / 640 + fy); ctx.lineTo(437, H * 523 / 640 + fy); ctx.fill();
   }
@@ -788,11 +797,11 @@
     // Fjord water
     const wy = gy + 26;
     const wg = ctx.createLinearGradient(0, wy, 0, H);
-    wg.addColorStop(0, '#15283f');
-    wg.addColorStop(1, '#0a1422');
+    wg.addColorStop(0, '#0b1a2e');
+    wg.addColorStop(1, '#05080d');
     ctx.fillStyle = wg;
     ctx.fillRect(0, wy, W, Math.max(0, H - wy + 40));
-    ctx.strokeStyle = 'rgba(159,198,238,0.18)';
+    ctx.strokeStyle = 'rgba(0,217,255,0.20)';
     ctx.lineWidth = 1;
     for (let i = 0; i < 6; i++) {
       const y = wy + 8 + i * 9;
@@ -801,7 +810,7 @@
       ctx.beginPath(); ctx.moveTo(360 - off - i * 9, y); ctx.lineTo(420 - off - i * 9, y); ctx.stroke();
     }
     // Rocky outcrop the tower stands on
-    ctx.fillStyle = '#1b2533';
+    ctx.fillStyle = '#0c131d';
     ctx.beginPath();
     ctx.moveTo(60, H + 40);
     ctx.lineTo(78, wy + 4);
@@ -813,34 +822,34 @@
     ctx.lineTo(424, H + 40);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = 'rgba(223,232,240,0.08)';
-    ctx.fillRect(130, gy, 220, 2);
+    ctx.fillStyle = 'rgba(0,217,255,0.35)';
+    ctx.fillRect(130, gy, 220, 1);
   }
 
   function stoneHsl(row) {
-    return [215 + Math.sin(row * 0.45) * 22 + Math.sin(row * 0.13) * 14, 10 + (row % 4) * 3, 44 + Math.sin(row * 0.9) * 5];
+    return [220 + Math.sin(row * 0.45) * 10 + Math.sin(row * 0.13) * 8, 40 + (row % 4) * 3, 14 + Math.sin(row * 0.9) * 1.5];
   }
   // Draw a stone block in local coordinates (0,0 = its top-left)
   function stoneLocal(b, glow) {
     const [h, s, l] = stoneHsl(b.row);
     const g = ctx.createLinearGradient(0, 0, 0, BH);
-    g.addColorStop(0, `hsl(${h} ${s}% ${l + 10}%)`);
-    g.addColorStop(1, `hsl(${h} ${s}% ${l - 12}%)`);
+    g.addColorStop(0, `hsl(${h} ${s}% ${l + 3}%)`);
+    g.addColorStop(1, `hsl(${h} ${s}% ${l - 4}%)`);
     roundRect(0, 0, b.w, BH, 3);
     ctx.fillStyle = g;
     ctx.fill();
     ctx.save();
     ctx.clip();
     // Chisel marks, fixed in world x so trimmed stones keep their texture
-    ctx.fillStyle = `hsla(${h} ${s}% ${l - 22}% / 0.5)`;
+    ctx.fillStyle = `hsla(${h} ${s}% ${l + 10}% / 0.45)`;
     for (let k = 0; k < 9; k++) {
       const px = ((b.row * 53 + k * 97) % 470) - b.x;
       const py = 5 + ((b.row * 7 + k * 11) % 20);
       ctx.fillRect(px, py, 3 + (k % 3), 1.5);
     }
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.fillRect(0, 0, b.w, 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.fillStyle = 'rgba(0,217,255,0.75)';
+    ctx.fillRect(0, 0, b.w, 1.5);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fillRect(0, BH - 3, b.w, 3);
     ctx.restore();
     // Carved rune
@@ -849,15 +858,14 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const rune = RUNES[b.row % RUNES.length];
-      ctx.fillStyle = 'rgba(255,255,255,0.16)';
-      ctx.fillText(rune, b.w / 2, BH / 2 + 2);
-      if (glow > 0) { ctx.shadowColor = '#e0a64a'; ctx.shadowBlur = 10 * glow; }
-      ctx.fillStyle = glow > 0 ? mix('#141c28', '#e0a64a', glow) : `hsl(${h} ${s}% ${l - 26}%)`;
+      ctx.shadowColor = glow > 0 ? '#9af0ff' : '#00d9ff';
+      ctx.shadowBlur = glow > 0 ? 6 + 10 * glow : 6;
+      ctx.fillStyle = glow > 0 ? mix('#00d9ff', '#ffffff', Math.min(1, glow)) : 'rgba(0,217,255,0.8)';
       ctx.fillText(rune, b.w / 2, BH / 2 + 1);
       ctx.shadowBlur = 0;
     }
     roundRect(0.5, 0.5, b.w - 1, BH - 1, 3);
-    ctx.strokeStyle = glow > 0 ? `rgba(224,166,74,${glow})` : 'rgba(8,12,20,0.55)';
+    ctx.strokeStyle = glow > 0 ? `rgba(154,240,255,${0.5 + glow * 0.5})` : 'rgba(0,217,255,0.45)';
     ctx.lineWidth = glow > 0 ? 2 : 1;
     ctx.stroke();
   }
@@ -880,7 +888,7 @@
     ctx.scale(1.08 * (1 + sq * 0.12), 1.08 * (1 - sq * 0.14));
     const breathe = air ? 0 : Math.sin(time * 2.2) * 0.8;
     const wag = Math.sin(time * (air ? 12 : 3)) * 4;
-    const BODY = '#232d3c', RIM = 'rgba(159,198,238,0.5)';
+    const BODY = '#1c2533', RIM = 'rgba(0,217,255,0.45)';
     // Tail
     ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(-12, -5); ctx.quadraticCurveTo(-27, -2, -30 + wag * 0.3, -15 + wag);
@@ -907,22 +915,22 @@
     ctx.quadraticCurveTo(21, -2, 20, 0);
     ctx.closePath();
     const g = ctx.createLinearGradient(0, -48, 0, 0);
-    g.addColorStop(0, '#34425a');
+    g.addColorStop(0, '#3a4658');
     g.addColorStop(1, BODY);
     ctx.fillStyle = g;
     ctx.fill();
     ctx.strokeStyle = RIM; ctx.lineWidth = 1.3; ctx.lineJoin = 'round';
     ctx.stroke();
     // Haunch line
-    ctx.strokeStyle = 'rgba(159,198,238,0.2)';
+    ctx.strokeStyle = 'rgba(0,217,255,0.18)';
     ctx.beginPath(); ctx.moveTo(-6, -2); ctx.quadraticCurveTo(-2, -12, -10, -18); ctx.stroke();
     // Nose
-    ctx.fillStyle = '#0b111c';
+    ctx.fillStyle = '#05080d';
     ctx.beginPath(); ctx.arc(30.5, -31, 1.6, 0, Math.PI * 2); ctx.fill();
-    // Glowing amber eye
-    ctx.fillStyle = '#ffc66b';
-    ctx.shadowColor = '#e0a64a';
-    ctx.shadowBlur = 8;
+    // Glowing neon eye
+    ctx.fillStyle = '#9af0ff';
+    ctx.shadowColor = '#00d9ff';
+    ctx.shadowBlur = 10;
     ctx.beginPath(); ctx.ellipse(18, -34.5, 2.4, 1.5, -0.25, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
@@ -932,12 +940,12 @@
     const sy = cur.y + cam + (cur.falling ? 0 : cur.sway);
     // Drop guide
     if (!cur.falling) {
-      ctx.fillStyle = 'rgba(223,232,240,0.05)';
+      ctx.fillStyle = 'rgba(0,217,255,0.05)';
       ctx.fillRect(cur.x, sy + BH, cur.w, top().y + cam - sy - BH);
     }
     const rot = cur.falling ? 0 : cur.sway * 0.006;
     ctx.save();
-    if (odinEye) { ctx.shadowColor = '#e0a64a'; ctx.shadowBlur = 16 + Math.sin(time * 6) * 5; }
+    if (odinEye) { ctx.shadowColor = '#00d9ff'; ctx.shadowBlur = 16 + Math.sin(time * 6) * 5; }
     drawStone(cur, cur.x, sy, rot, odinEye ? 0.6 + Math.sin(time * 6) * 0.3 : 0);
     ctx.restore();
   }
@@ -949,20 +957,23 @@
     const y = H * 0.17;
     ctx.save();
     ctx.globalAlpha = a;
-    ctx.fillStyle = 'rgba(11,17,28,0.55)';
+    ctx.fillStyle = 'rgba(10,15,22,0.8)';
     ctx.fillRect(0, y - 40, W, 78);
+    ctx.fillStyle = 'rgba(0,217,255,0.5)';
+    ctx.fillRect(0, y - 40, W, 1);
+    ctx.fillRect(0, y + 37, W, 1);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '12px "Alegreya Sans", sans-serif';
-    ctx.fillStyle = '#5fd3b8';
+    ctx.fillStyle = '#9af0ff';
     ctx.fillText((MILESTONES.find(s => s.name === banner.name)?.m ?? 0) + ' M', W / 2, y - 24);
     ctx.font = '30px Metamorphous, Georgia, serif';
-    ctx.fillStyle = '#e0a64a';
-    ctx.shadowColor = '#e0a64a'; ctx.shadowBlur = 12;
+    ctx.fillStyle = '#00d9ff';
+    ctx.shadowColor = '#00d9ff'; ctx.shadowBlur = 12;
     ctx.fillText(banner.name, W / 2, y + 2);
     ctx.shadowBlur = 0;
     ctx.font = '15px "Alegreya Sans", sans-serif';
-    ctx.fillStyle = '#c3cedb';
+    ctx.fillStyle = '#d8e0ea';
     ctx.fillText(banner.sub, W / 2, y + 26);
     ctx.restore();
   }
@@ -975,7 +986,7 @@
     const y = H * 0.31;
     ctx.save();
     ctx.globalAlpha = a;
-    ctx.fillStyle = 'rgba(11,17,28,0.72)';
+    ctx.fillStyle = 'rgba(10,15,22,0.9)';
     roundRect(24, y - 50, W - 48, 100, 8);
     ctx.fill();
     ctx.strokeStyle = toast.color;
@@ -988,27 +999,29 @@
     ctx.shadowColor = toast.color; ctx.shadowBlur = 16;
     ctx.beginPath(); ctx.arc(-W / 2 + 80, 0, 28, 0, Math.PI * 2); ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#0b111c';
+    ctx.fillStyle = '#05080d';
     ctx.font = '30px "Noto Sans Runic", serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(toast.rune, -W / 2 + 80, 2);
     ctx.textAlign = 'left';
     ctx.font = '26px Metamorphous, Georgia, serif';
-    ctx.fillStyle = toast.good ? '#dfe8f0' : '#f0b3a9';
+    ctx.fillStyle = toast.good ? '#d8e0ea' : '#ff8fab';
     ctx.fillText(toast.name, -W / 2 + 122, -12);
     ctx.font = '16px "Alegreya Sans", sans-serif';
-    ctx.fillStyle = '#c3cedb';
+    ctx.fillStyle = '#d8e0ea';
     ctx.fillText(toast.sub, -W / 2 + 122, 18);
     ctx.restore();
   }
 
   function drawTopBar() {
-    ctx.fillStyle = 'rgba(11,17,28,0.55)';
+    ctx.fillStyle = 'rgba(10,15,22,0.8)';
     ctx.fillRect(0, 0, W, 40);
+    ctx.fillStyle = 'rgba(0,217,255,0.22)';
+    ctx.fillRect(0, 40, W, 1);
     ctx.font = '15px Metamorphous, Georgia, serif';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#dfe8f0';
+    ctx.fillStyle = '#d8e0ea';
     ctx.fillText(zoneName(), 16, 21);
     ctx.textAlign = 'right';
     ctx.font = '600 15px "Alegreya Sans", sans-serif';
@@ -1018,7 +1031,7 @@
     const list = [['slow', ACTIONS['3']], ['haste', ACTIONS['4']], ['storm', ACTIONS['6']]];
     for (const [k, a] of list) {
       if (effects[k] <= 0) continue;
-      ctx.fillStyle = a.color === '#c4473a' ? '#f08b7e' : a.color;
+      ctx.fillStyle = a.color === '#ff3d71' ? '#ff6b91' : a.color;
       ctx.font = '13px "Noto Sans Runic", serif';
       ctx.fillText(a.rune, ex - 22, 21);
       ctx.font = '12px "Alegreya Sans", sans-serif';
@@ -1026,13 +1039,13 @@
       ex -= 50;
     }
     if (odinEye) {
-      ctx.fillStyle = '#e0a64a';
+      ctx.fillStyle = '#00d9ff';
       ctx.font = '13px "Noto Sans Runic", serif';
       ctx.fillText(ACTIONS['1'].rune, ex - 4, 21);
       ex -= 26;
     }
     if (streak > 1) {
-      ctx.fillStyle = '#e0a64a';
+      ctx.fillStyle = '#9af0ff';
       ctx.font = '13px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText('Perfect ×' + streak, 16 + ctx.measureText(zoneName()).width + 60, 21);
@@ -1060,7 +1073,7 @@
     if (mode !== 'title') drawCurrent();
     // Storm wind streaks
     if (effects.storm > 0) {
-      ctx.strokeStyle = 'rgba(223,232,240,0.18)';
+      ctx.strokeStyle = 'rgba(154,240,255,0.2)';
       ctx.lineWidth = 1.5;
       for (let i = 0; i < 14; i++) {
         const y = (i * 61 + time * 40) % H;
@@ -1070,7 +1083,7 @@
     }
     for (const f of floaters) {
       ctx.globalAlpha = Math.max(0, 1 - f.t / 1.1);
-      ctx.fillStyle = f.color || '#e0a64a';
+      ctx.fillStyle = f.color || '#9af0ff';
       ctx.font = '600 15px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -1081,13 +1094,13 @@
     drawToast();
     drawTopBar();
     if (mode === 'play' && tower.length === 1 && cur && !cur.falling) {
-      ctx.fillStyle = 'rgba(223,232,240,' + (0.55 + Math.sin(time * 4) * 0.3) + ')';
+      ctx.fillStyle = 'rgba(216,224,234,' + (0.55 + Math.sin(time * 4) * 0.3) + ')';
       ctx.font = '15px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Click, tap or press Space to drop the stone', W / 2, H * 0.68);
     }
     if (flash > 0) {
-      ctx.fillStyle = 'rgba(191,238,226,' + flash * 0.3 + ')';
+      ctx.fillStyle = 'rgba(154,240,255,' + flash * 0.3 + ')';
       ctx.fillRect(0, 0, W, H);
     }
     ctx.restore();
