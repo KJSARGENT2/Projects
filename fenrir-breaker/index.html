@@ -65,9 +65,9 @@
   .hud b { color: var(--frost); font-weight: 700; }
   .stage {
     position: relative;
-    width: min(100%, calc((100dvh - 130px) * 0.75));
+    width: min(100%, calc((100dvh - 110px) * 0.5625));
     max-width: 480px;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 9 / 16;
     border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 0 0 1px #2a3a52, 0 20px 60px #0008;
@@ -91,6 +91,7 @@
     text-align: center;
     background: #0b111ccc;
     backdrop-filter: blur(2px);
+    overflow-y: auto;
   }
   .overlay .eyebrow {
     font-size: 0.75rem;
@@ -174,6 +175,9 @@
     padding: 4px 10px;
     cursor: pointer;
   }
+  body.stream header, body.stream .controls { display: none; }
+  body.stream { padding: 0; justify-content: center; }
+  body.stream .stage { width: min(100%, calc(100dvh * 0.5625)); max-width: none; border-radius: 0; box-shadow: none; }
   @media (max-width: 420px) {
     h1 { font-size: 1.2rem; }
     .hud { gap: 10px; font-size: 0.8rem; }
@@ -193,7 +197,7 @@
 </header>
 
 <div class="stage" id="stage">
-  <canvas id="game" width="480" height="640" aria-label="Fenrir Unbound game board"></canvas>
+  <canvas id="game" width="480" height="854" aria-label="Fenrir Unbound game board"></canvas>
 
   <div class="overlay" id="overlay">
     <div class="eyebrow" id="ov-eyebrow">A brick breaker from the Prose Edda</div>
@@ -207,8 +211,17 @@
       <i style="background:#9fc6ee">ᛁ</i><span>Fimbulwinter: slow the moon</span>
       <i style="background:#dfe8f0">ᛟ</i><span>Mead of Odin: extra life</span>
     </div>
+    <div class="legend" id="ov-viewer">
+      <span class="eyebrow" style="grid-column:1/-1">Viewer actions (keys 1–6)</span>
+      <i style="background:#5fd3b8">1</i><span>Sköll &amp; Hati: two more moons</span>
+      <i style="background:#e0a64a">2</i><span>Howl: wider jaws</span>
+      <i style="background:#c4473a">3</i><span>Surtr's fire: burn through links</span>
+      <i style="background:#dfe8f0">4</i><span>Mead of Odin: extra life</span>
+      <i style="background:#8e9aa6">5</i><span>Loki's chains: a new row of links</span>
+      <i style="background:#8e9aa6">6</i><span>Jörmungandr's fury: faster moon, smaller jaws</span>
+    </div>
     <button id="ov-btn" type="button">Break the chains</button>
-    <div class="help">Move: mouse, touch or ← → · Launch: click, tap or Space · Pause: P</div>
+    <div class="help">Move: mouse, touch or ← → · Launch: click, tap or Space · Pause: P · H: hide chrome</div>
   </div>
 </div>
 
@@ -222,7 +235,7 @@
 
 <script>
 (() => {
-  const W = 480, H = 640;
+  const W = 480, H = 854;
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
@@ -301,7 +314,7 @@
   };
   const POWER_BAG = ['wide', 'wide', 'multi', 'multi', 'fire', 'slow', 'slow', 'life'];
 
-  const COLS = 11, GAP = 4, SIDE = 16, TOP = 70, BH = 20;
+  const COLS = 11, GAP = 4, SIDE = 16, TOP = 90, BH = 20;
   const BW = (W - SIDE * 2 - GAP * (COLS - 1)) / COLS;
 
   // ---------- State ----------
@@ -311,7 +324,7 @@
   let best = 0;
   let bricks = [], balls = [], drops = [], particles = [], floaters = [];
   let shake = 0, time = 0, flash = 0;
-  const effects = { wide: 0, fire: 0, slow: 0 };
+  const effects = { wide: 0, fire: 0, slow: 0, shrink: 0 };
   const paddle = { x: W / 2, y: H - 46, w: 84, h: 14, target: W / 2 };
   const keys = { left: false, right: false };
   let soundOn = true;
@@ -368,7 +381,7 @@
       });
     });
     drops = []; particles = []; floaters = [];
-    effects.wide = effects.fire = effects.slow = 0;
+    effects.wide = effects.fire = effects.slow = effects.shrink = 0;
     $('level-name').textContent = L.name + (i >= LEVELS.length ? ' ' + roman(Math.floor(i / LEVELS.length) + 1) : '');
     resetBall();
   }
@@ -410,9 +423,25 @@
     $('ov-text').textContent = text;
     $('ov-btn').textContent = button;
     $('ov-legend').hidden = !legend;
+    $('ov-viewer').hidden = !legend;
     $('overlay').hidden = false;
   }
-  function hideOverlay() { $('overlay').hidden = true; canvas.focus?.(); }
+  function hideOverlay() { $('overlay').hidden = true; stopCountdown(); canvas.focus?.(); }
+
+  // Auto-continue so a live stream keeps running with nobody at the keyboard
+  let countdownTimer = null;
+  function startCountdown(seconds, label) {
+    stopCountdown();
+    let left = seconds;
+    const btn = $('ov-btn');
+    const tick = () => {
+      btn.textContent = label + ' (' + left + ')';
+      if (left-- <= 0) { stopCountdown(); onOverlayButton(); }
+    };
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+  function stopCountdown() { if (countdownTimer) clearInterval(countdownTimer); countdownTimer = null; }
 
   function onOverlayButton() {
     if (mode === 'title' || mode === 'over') { newGame(); mode = 'play'; hideOverlay(); }
@@ -455,12 +484,62 @@
       if (e.key === ' ') e.preventDefault();
     }
     else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') togglePause();
+    else if (e.key === 'h' || e.key === 'H') toggleStream();
+    else if (/^[1-6]$/.test(e.key) && !e.repeat) viewerAction(+e.key);
   });
   window.addEventListener('keyup', e => {
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'play') togglePause(); });
+
+  function toggleStream(force) {
+    const on = force ?? !document.body.classList.contains('stream');
+    document.body.classList.toggle('stream', on);
+    try { localStorage.setItem('fenrir-breaker-stream', on ? 'on' : 'off'); } catch (e) {}
+  }
+  try { if (localStorage.getItem('fenrir-breaker-stream') === 'on') toggleStream(true); } catch (e) {}
+
+  // ---------- Viewer actions (bound to TikTok LIVE events in Fenrir) ----------
+  const VIEWER = {
+    1: { power: 'multi' },
+    2: { power: 'wide' },
+    3: { power: 'fire' },
+    4: { power: 'life' },
+    5: { rune: 'ᛚ', label: "Loki's chains", color: '#8e9aa6', run: lokisChains },
+    6: { rune: 'ᛃ', label: "Jörmungandr's fury", color: '#c4473a', run: jormungandr },
+  };
+  let toast = null;
+  function showToast(rune, label, color) { toast = { rune, label, color, t: 0 }; }
+  function viewerAction(n) {
+    if (mode !== 'play') return;
+    const a = VIEWER[n];
+    if (a.power) {
+      const p = POWERS[a.power];
+      applyPower(a.power);
+      showToast(p.rune, p.label, p.color);
+    } else {
+      a.run();
+      showToast(a.rune, a.label, a.color);
+    }
+  }
+  function lokisChains() {
+    // Push every link down one row and forge a fresh row of iron on top
+    const lowest = bricks.reduce((m, k) => Math.max(m, k.y + k.h), 0);
+    if (lowest + BH + GAP < paddle.y - 160) for (const k of bricks) k.y += BH + GAP;
+    for (let c = 0; c < COLS; c++) {
+      const x = SIDE + c * (BW + GAP);
+      if (bricks.some(k => k.x === x && k.y < TOP + BH)) continue;
+      bricks.push({ x, y: TOP, w: BW, h: BH, hp: 2, max: 2, type: 'iron', pts: 20, rune: RUNES[c], hit: 0.15 });
+    }
+    // A moon caught inside the new row is nudged out below it
+    for (const b of balls) if (!b.stuck && b.y < TOP + BH + b.r + GAP) { b.y = TOP + BH + b.r + GAP; b.vy = Math.abs(b.vy); }
+    sfx.stone(); shake = 6;
+  }
+  function jormungandr() {
+    for (const b of balls) { b.vx *= 1.3; b.vy *= 1.3; }
+    effects.shrink = 10; effects.wide = 0;
+    sfx.lose(); shake = 6;
+  }
 
   // ---------- Physics helpers ----------
   function circleRect(b, r) {
@@ -519,13 +598,14 @@
         : next.text,
       button: 'Break it',
     });
+    startCountdown(6, 'Break it');
   }
 
   function loseLife() {
     lives--;
     sfx.lose();
     shake = 8;
-    effects.wide = effects.fire = effects.slow = 0;
+    effects.wide = effects.fire = effects.slow = effects.shrink = 0;
     drops = [];
     updateHud();
     if (lives <= 0) {
@@ -537,6 +617,7 @@
         text: 'You scored ' + score + ' and reached ' + LEVELS[levelIndex % LEVELS.length].name + '. Tyr lost a hand for less.',
         button: 'Try again',
       });
+      startCountdown(8, 'Try again');
     } else resetBall();
   }
 
@@ -566,7 +647,7 @@
     flash = Math.max(0, flash - dt * 1.5);
 
     // Paddle
-    const targetW = effects.wide > 0 ? 130 : 84;
+    const targetW = effects.wide > 0 ? 130 : effects.shrink > 0 ? 56 : 84;
     paddle.w += (targetW - paddle.w) * Math.min(1, dt * 10);
     if (keys.left) paddle.target = paddle.x - 560 * dt * 4;
     if (keys.right) paddle.target = paddle.x + 560 * dt * 4;
@@ -650,6 +731,7 @@
       if (f.t > 0.9) floaters.splice(i, 1);
     }
     for (const k of bricks) k.hit = Math.max(0, k.hit - dt);
+    if (toast && (toast.t += dt) > 2.2) toast = null;
   }
 
   // ---------- Drawing ----------
@@ -697,8 +779,9 @@
     ctx.fillStyle = '#0e1828';
     ctx.beginPath();
     ctx.moveTo(0, H);
-    const peaks = [[0, 560], [60, 520], [120, 555], [190, 490], [260, 548], [330, 505], [400, 545], [480, 515], [480, H]];
-    for (const [x, y] of peaks) ctx.lineTo(x, y);
+    const peaks = [[0, 560], [60, 520], [120, 555], [190, 490], [260, 548], [330, 505], [400, 545], [480, 515]];
+    for (const [x, y] of peaks) ctx.lineTo(x, y + H - 640);
+    ctx.lineTo(W, H);
     ctx.fill();
   }
 
@@ -853,9 +936,9 @@
     // Active effects as timers
     let ex = W - 16;
     ctx.textAlign = 'right';
-    for (const k of ['slow', 'fire', 'wide']) {
+    for (const k of ['shrink', 'slow', 'fire', 'wide']) {
       if (effects[k] <= 0) continue;
-      const p = POWERS[k];
+      const p = k === 'shrink' ? { rune: 'ᛃ', color: '#8e9aa6' } : POWERS[k];
       ctx.fillStyle = p.color;
       ctx.font = '13px "Noto Sans Runic", serif';
       ctx.fillText(p.rune, ex - 22, 21);
@@ -899,6 +982,24 @@
       ctx.font = '15px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Click, tap or press Space to loose the moon', W / 2, H - 90);
+    }
+    if (toast) {
+      const a = Math.min(1, toast.t * 6, (2.2 - toast.t) * 3);
+      const y = H * 0.42 - Math.min(1, toast.t * 5) * 12;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = 'rgba(11,17,28,0.8)';
+      ctx.fillRect(0, y - 34, W, 68);
+      ctx.fillStyle = toast.color;
+      ctx.fillRect(0, y - 34, W, 2); ctx.fillRect(0, y + 32, W, 2);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '28px Metamorphous, Georgia, serif';
+      const lw = ctx.measureText(toast.label).width;
+      ctx.fillStyle = '#dfe8f0';
+      ctx.fillText(toast.label, W / 2 + 18, y);
+      ctx.fillStyle = toast.color;
+      ctx.font = '26px "Noto Sans Runic", serif';
+      ctx.fillText(toast.rune, W / 2 + 18 - lw / 2 - 26, y);
+      ctx.globalAlpha = 1;
     }
     if (flash > 0) {
       ctx.fillStyle = 'rgba(191,238,226,' + flash * 0.4 + ')';
