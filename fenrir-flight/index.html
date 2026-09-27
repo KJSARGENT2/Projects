@@ -219,6 +219,10 @@
 <script>
 (() => {
   const W = 450, H = 800;
+  const GAME_ID = 'flight';
+  function hubPost(event, data) {
+    try { if (window.parent !== window) window.parent.postMessage(Object.assign({ source: 'fenrir-game', game: GAME_ID, event }, data || {}), '*'); } catch (e) {}
+  }
   const HEAD = 110, CEIL = HEAD + 12, FLOOR = H - 34, PX = 80;
   const TOP_Y = CEIL + 22, BOT_Y = FLOOR - 20;
   const GRAV = 1900, LIFT = 2300, V_UP = -560, V_DOWN = 700;
@@ -600,6 +604,7 @@
   // ---------- Viewer actions ----------
   function viewerAction(key) {
     const a = ACTIONS[key];
+    hubPost('viewer-action', { key: +key });
     toasts.push({ ...a, t: 0 });
     if (toasts.length > 4) toasts.splice(1, toasts.length - 4);
     sfx.action(a.bad);
@@ -690,6 +695,7 @@
     $('r-best').textContent = best;
     $('end-count').textContent = 'Next round in 8';
     show('ov-end');
+    hubPost('round-end', { score: final, won: reason === 'time', stats: { reason, meters: m, rings, lives } });
   }
 
   // ---------- Update ----------
@@ -703,7 +709,7 @@
       const before = Math.ceil(readyT);
       readyT -= dt;
       if (Math.ceil(readyT) !== before && readyT > 0) sfx.beep(false);
-      if (readyT <= 0) { mode = 'play'; sfx.beep(true); }
+      if (readyT <= 0) { mode = 'play'; sfx.beep(true); hubPost('round-start'); }
       tickFx(dt);
       return;
     }

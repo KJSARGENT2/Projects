@@ -237,6 +237,10 @@
 (() => {
   const W = 450, H = 800, HB = 110;           // logical size, header band height
   const ROUND = 180;
+  const GAME_ID = 'breaker';
+  function hubPost(event, data) {
+    try { if (window.parent !== window) window.parent.postMessage(Object.assign({ source: 'fenrir-game', game: GAME_ID, event }, data || {}), '*'); } catch (e) {}
+  }
   const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
   const C = {
     bg: '#05080d', field: '#10151d', panel: '#0a0f16', text: '#d8e0ea', muted: '#7d8899',
@@ -418,6 +422,7 @@
     $('r-final').textContent = final;
     $('r-best').textContent = best;
     showScreen('end');
+    hubPost('round-end', { score: final, won: levelsCleared > 0, stats: { reason, levelsCleared, lives: Math.max(0, lives) } });
     let left = 8;
     const tick = () => {
       $('end-count').textContent = 'Next round in ' + left;
@@ -501,6 +506,7 @@
   function viewerAction(n) {
     if (mode !== 'play') return;
     const a = VIEWER[n];
+    hubPost('viewer-action', { key: n });
     if (a.power) { applyPower(a.power); showToast(POWERS[a.power].label, false); }
     else { a.run(); showToast(a.label, true); }
   }
@@ -970,6 +976,7 @@
       countT -= dt;
       if (countT <= 0) {
         mode = 'play';
+        hubPost('round-start');
         if (launchQueued) launch();
         launchQueued = false;
       } else if (Math.ceil(countT) !== before) sfx.tick();

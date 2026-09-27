@@ -132,6 +132,10 @@ button:focus-visible{outline:2px solid var(--neon);outline-offset:3px}
 <script>
 (function(){
 'use strict';
+var GAME_ID='volley';
+function hubPost(event,data){
+  try{ if(window.parent!==window) window.parent.postMessage(Object.assign({source:'fenrir-game',game:GAME_ID,event:event},data||{}),'*'); }catch(e){}
+}
 var W=450,H=800,HEAD=110,FIELD_BOT=772,COLS=7,GAP=4,ROWS=10;
 var P=(W-GAP)/COLS, S=P-GAP, TOP0=HEAD+14;
 var R=7, SPEED=900, FIRE_GAP=0.07, MIN_ANG=8*Math.PI/180, FLOOR_Y=FIELD_BOT-R;
@@ -407,6 +411,7 @@ function toast(txt,hostile){
 }
 function action(n){
   if(paused||(state!=='aim'&&state!=='fly')) return;
+  hubPost('viewer-action',{key:n});
   if(n===1){
     baseBalls+=5; if(state==='fly'){ queue+=5; if(fireTimer<0) fireTimer=0; }
     toast('Pack call · +5 balls',false); beep(440,0.2,'sine',0.05,880);
@@ -465,6 +470,7 @@ function gameOver(){
   $('oScore').textContent=score; $('oBest').textContent=best; $('oNext').textContent='Next round in 8';
   beep(200,0.6,'sawtooth',0.05,60);
   setTimeout(function(){ if(state==='over') { show('overScreen',true); updButtons(); } },700);
+  hubPost('round-end',{score:score,won:false,stats:{turns:Math.max(0,turn-1),broken:broken,hits:hits}});
   updButtons();
 }
 function setPause(on){
@@ -622,7 +628,7 @@ var last=performance.now(), lastLabel=-1;
 function frame(t){
   var dt=Math.min(0.05,(t-last)/1000); last=t;
   if(!paused){
-    if(state==='count'){ cdT-=dt; if(cdT<=0){state='aim';updButtons();} }
+    if(state==='count'){ cdT-=dt; if(cdT<=0){state='aim';updButtons();hubPost('round-start');} }
     if(state==='aim'){
       if(keys.ArrowLeft){aimAng=Math.min(Math.PI-MIN_ANG,aimAng+1.4*dt);hasAim=true;}
       if(keys.ArrowRight){aimAng=Math.max(MIN_ANG,aimAng-1.4*dt);hasAim=true;}

@@ -665,6 +665,11 @@
   });
   renderSound();
 
+  // Report to Fenrir Arcade when hosted in its frame (outbound only)
+  function hubPost(event, data) {
+    try { if (window.parent !== window) window.parent.postMessage(Object.assign({ source: 'fenrir-game', game: 'bubbles', event }, data || {}), '*'); } catch (e) {}
+  }
+
   function endRound(reason) {
     mode = 'end';
     shot = null;
@@ -687,6 +692,7 @@
     endTimer = 8;
     lastCount = -1;
     show('scr-end');
+    hubPost('round-end', { score: final, won: reason !== 'lost', stats: { clears } });
   }
 
   // ---------- Game flow ----------
@@ -854,6 +860,7 @@
   function viewerAction(n) {
     if (mode !== 'play' || !ACTIONS[n]) return;
     toasts.push({ ...ACTIONS[n], t: 0 });
+    hubPost('viewer-action', { key: n });
     if (toasts.length > 3) toasts.shift();
     if (n === 1 || n === 2) {
       if (current < BOMB) next = current;
@@ -1454,7 +1461,7 @@
       countT -= dt;
       const n = Math.ceil(countT);
       if (n !== lastBeep && n > 0) { lastBeep = n; sfx.tick(); }
-      if (countT <= 0) { mode = 'play'; sfx.go(); }
+      if (countT <= 0) { mode = 'play'; sfx.go(); hubPost('round-start'); }
     }
     tickFx(dt);
     if (mode === 'end') {
