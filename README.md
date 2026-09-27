@@ -7,7 +7,7 @@ Four single-file browser games built for streaming with the [Fenrir](https://fen
 | Game | Folder | Style |
 | --- | --- | --- |
 | Fenrir Unbound | `fenrir-breaker/` | Brick breaker |
-| Fenrir's Runes | `fenrir-bubbles/` | Bubble shooter |
+| Fenrir Bubbles | `fenrir-bubbles/` | Bubble shooter |
 | Fenrir's Tower | `fenrir-stacker/` | Block stacker |
 | Fenrir Flight | `fenrir-flight/` | Jetpack-style endless runner |
 
